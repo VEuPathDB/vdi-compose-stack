@@ -1,0 +1,261 @@
+name: "vdi"
+
+networks:
+  monitoring-ext:
+    external: false
+  rabbitmq:
+    external: false
+  traefik:
+    external: false
+
+volumes:
+  phony-app-db-volume: {}
+
+services:
+  cache-db:
+    build:
+      context: .vdi-repos/vdi-internal-db
+    ports:
+    - "5432:5432"
+    environment:
+      POSTGRES_USER: vdi
+      POSTGRES_PASSWORD: pgPass
+      POSTGRES_DB: vdi
+
+  kafka:
+    ports:
+    - "9092:9092"
+
+  minio-create-buckets:
+    image: veupathdb/minio-mc
+    depends_on:
+      minio-external:
+        condition: service_started
+      rabbit-external:
+        condition: service_started
+    networks:
+    - internal
+    entrypoint: >
+      /bin/sh -c "
+      while ! nc -zv minio-external 9000; do sleep 3; done;
+      mc alias set minioc http://minio-external:9000 minioUser minioPass;
+      mc mb minioc/vdi;
+      mc policy set public minioc/vdi;
+      mc event add minioc/vdi arn:minio:sqs::RABBIT:amqp --event put,delete,replica;
+      exit 0;
+      "
+
+  minio-external:
+    image: veupathdb/minio
+    depends_on:
+    - rabbit-external
+    links:
+    - rabbit-external
+    ports:
+    - "9000:9000"
+    - "9001:9001"
+    networks:
+    - internal
+    - rabbitmq
+    environment:
+      MINIO_ROOT_USER: minioUser
+      MINIO_ROOT_PASSWORD: minioPass
+
+      MINIO_NOTIFY_AMQP_ENABLE_RABBIT: "on"
+      MINIO_NOTIFY_AMQP_URL_RABBIT: amqp://rabbitUser:rabbitPass@rabbit-external:5672
+      MINIO_NOTIFY_AMQP_EXCHANGE_RABBIT: vdi-bucket-notifications
+      MINIO_NOTIFY_AMQP_EXCHANGE_TYPE_RABBIT: direct
+      MINIO_NOTIFY_AMQP_ROUTING_KEY_RABBIT: vdi-bucket-notifications
+      MINIO_NOTIFY_AMQP_DELIVERY_MODE_RABBIT: 2
+      MINIO_NOTIFY_AMQP_DURABLE_RABBIT: "on"
+
+    entrypoint: >
+      /bin/sh -c "
+      while ! nc -zv rabbit-external 5672; do sleep 3; done;
+      minio server --console-address ':9001' /data;
+      "
+
+  plugin-example:
+    image: veupathdb/vdi-plugin-example:${PLUGIN_EXAMPLE_TAG:-latest}
+    build:
+      context: .vdi-repos/vdi-plugin-example
+    networks:
+      internal:
+        aliases:
+        - example
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      LDAP_SERVER: ${LDAP_SERVER}
+      ORACLE_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      CUSTOM_PATH: ${PLUGIN_HANDLER_NOOP_CUSTOM_PATH}
+      SITE_BUILD: ${SITE_BUILD}
+      DATASET_INSTALL_ROOT: /datasets
+
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+
+  rabbit-external:
+    image: rabbitmq:3.11.13-management-alpine
+    ports:
+    - "5672:5672"
+    - "9002:15672"
+    networks:
+    - rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitUser
+      RABBITMQ_DEFAULT_PASS: rabbitPass
+
+  phony-app-db:
+    image: phony-app-db
+    build:
+      context: dev/
+      dockerfile: phony-app-db.dockerfile
+    ports:
+    - "1521:5432"
+    networks:
+    - internal
+    environment:
+      POSTGRES_DB: vdi
+      POSTGRES_USER: testUsername
+      POSTGRES_PASSWORD: testPassword
+    healthcheck:
+      test: "pg_isready -U testUsername -d vdi"
+      start_period: 30s
+      start_interval: 3s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - phony-app-db-volume:/var/lib/postgresql/data
+
+  service:
+    build:
+      context: .vdi-repos/vdi-service
+      dockerfile: project/core/Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    depends_on:
+      minio-external:
+        condition: service_started
+      minio-create-buckets:
+        condition: service_completed_successfully
+      rabbit-external:
+        condition: service_started
+      phony-app-db:
+        condition: service_healthy
+      plugin-bigwig:
+        condition: service_healthy
+      plugin-biom:
+        condition: service_healthy
+      plugin-genelist:
+        condition: service_healthy
+      plugin-isasimple:
+        condition: service_healthy
+      plugin-noop:
+        condition: service_healthy
+      plugin-rnaseq:
+        condition: service_healthy
+      plugin-wrangler:
+        condition: service_healthy
+    links:
+    - rabbit-external
+    - minio-external
+    ports:
+    - "8080:80"
+    environment:
+      AMOEBA_ENABLED: ${AMOEBA_ENABLED:-false}
+      CLINEPI_ENABLED: ${CLINEPI_ENABLED:-false}
+      CRYPTO_ENABLED: ${CRYPTO_ENABLED:-false}
+      FUNGI_ENABLED: ${FUNGI_ENABLED:-false}
+      GIARDIA_ENABLED: ${GIARDIA_ENABLED:-false}
+      HOST_ENABLED: ${HOST_ENABLED:-false}
+      MICROBIOME_ENABLED: ${MICROBIOME_ENABLED:-false}
+      MICROSPORIDIA_ENABLED: ${MICROSPORIDIA_ENABLED:-false}
+      ORTHO_ENABLED: ${ORTHO_ENABLED:-false}
+      PIROPLASMA_ENABLED: ${PIROPLASMA_ENABLED:-false}
+      PLASMO_ENABLED: ${PLASMO_ENABLED:-false}
+      TOXO_ENABLED: ${TOXO_ENABLED:-false}
+      TRICH_ENABLED: ${TRICH_ENABLED:-false}
+      TRITRYP_ENABLED: ${TRITRYP_ENABLED:-false}
+      VECTOR_ENABLED: ${VECTOR_ENABLED:-false}
+    labels:
+      traefik.http.services.vdi-dev.loadbalancer.server.port: "80"
+      traefik.http.routers.vdi-dev.rule: "Host(`vdi.local.apidb.org}`)"
+      traefik.http.routers.vdi-dev.tls: "false"
+      traefik.http.routers.vdi-dev.entrypoints: "local"
+      traefik.docker.network: "traefik"
+
+  plugin-bigwig:
+    build:
+      context: .vdi-repos/vdi-plugin-bigwig
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-biom:
+    build:
+      context: .vdi-repos/vdi-plugin-biom
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-genelist:
+    build:
+      context: .vdi-repos/vdi-plugin-genelist
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-isasimple:
+    build:
+      context: .vdi-repos/vdi-plugin-isasimple
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-noop:
+    build:
+      context: .vdi-repos/vdi-plugin-noop
+
+  plugin-rnaseq:
+    build:
+      context: .vdi-repos/vdi-plugin-rnaseq
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-wrangler:
+    build:
+      context: .vdi-repos/vdi-plugin-wrangler
+    depends_on:
+      phony-app-db:
+        condition: service_healthy

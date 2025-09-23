@@ -1,0 +1,257 @@
+$schema: https://veupathdb.github.io/vdi-service/schema/config/full-config.json
+
+definitions:
+  genomicsProjects: &genomicsProjects
+  - AmoebaDB
+  - CryptoDB
+  - FungiDB
+  - GiardiaDB
+  - HostDB
+  - MicrosporidiaDB
+  - PiroplasmaDB
+  - PlasmoDB
+  - ToxoDB
+  - TrichDB
+  - TriTrypDB
+  - VectorBase
+  - VEuPathDB
+  dbConfig: &dbConfig
+    username: testUsername
+    password: testPassword
+    server: phony-app-db:5432
+    name: vdi
+
+containerCore:
+  http:
+    bindPort: 80
+    enableCors: true
+  authentication:
+    authEnabled: false
+
+vdi:
+  restService:
+    enableJerseyTrace: true
+
+  siteBuild: ${env:SITE_BUILD}
+
+  objectStore:
+    bucketName: vdi
+    https: false
+    server:
+      host: minio-external
+    accessToken: minioUser
+    secretKey: minioPass
+
+  rabbit:
+    global:
+      connection:
+        server: rabbit-external
+        username: rabbitUser
+        password: rabbitPass
+        tls: false
+      exchange:
+        name: vdi-bucket-notifications
+      queue:
+        name: vdi-bucket-notifications
+      routing:
+        key: vdi-bucket-notifications
+
+  daemons:
+    reconciler:
+      enabled: false
+
+  kafka:
+    servers:
+    - kafka:9092
+
+  cacheDb:
+    username: vdi
+    password: pgPass
+    server: cache-db:5432
+
+  plugins:
+    bigwig:
+      server: bigwig:80
+      displayName: bigWig
+      dataTypes:
+      - name: bigwigfiles
+        version: 1.0
+      projectIds: *genomicsProjects
+    biom:
+      server: biom:80
+      displayName: BIOM
+      dataTypes:
+      - name: biom
+        version: 1.0
+      projectIds:
+      - MicrobiomeDB
+    example:
+      server: example:80
+      displayName: Example
+      dataTypes:
+      - name: noop
+        version: 1.0
+    genelist:
+      server: genelist:80
+      displayName: Gene List
+      dataTypes:
+      - name: genelist
+        version: 1.0
+      projectIds: *genomicsProjects
+    isasimple:
+      server: isasimple:80
+      displayName: ISA Study
+      dataTypes:
+      - name: isasimple
+        version: 1.0
+      projectIds:
+      - ClinEpiDB
+    noop:
+      server: noop:80
+      displayName: Lightweight
+      dataTypes:
+      - name: lightweight
+        version: 1.0
+      typeChangesEnabled: true
+    phenotype:
+      server: wrangler:80
+      displayName: Phenotype
+      dataTypes:
+      - name: phenotype
+        version: 1.0
+      projectIds: *genomicsProjects
+    rnaseq:
+      server: rnaseq:80
+      displayName: RNA-Seq
+      dataTypes:
+      - name: rnaseq
+        version: 1.0
+      projectIds: *genomicsProjects
+
+  installTargets:
+  - targetName: AmoebaDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:AMOEBA_ENABLED:-false}
+
+  - targetName: ClinEpiDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:CLINEPI_ENABLED:-false}
+    metaValidation:
+      properties:
+        contacts:
+          minItems: 1
+          items:
+            required:
+            - firstName
+            - lastName
+            - email
+            - affiliation
+            - country
+        studyCharacteristics:
+          required:
+          - studyDesign
+          - studyType
+      required:
+      - projectName
+      - contacts
+      # ensure we have a program name when project name is "other"
+      if:
+        properties:
+          projectName:
+            const: "other"
+      then:
+        required: [ programName ]
+
+  - targetName: CryptoDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:CRYPTO_ENABLED:-false}
+
+  - targetName: FungiDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:FUNGI_ENABLED:-false}
+
+  - targetName: GiardiaDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:GIARDIA_ENABLED:-false}
+
+  - targetName: HostDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:HOST_ENABLED:-false}
+
+  - targetName: MicrobiomeDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:MICROBIOME_ENABLED:-false}
+    metaValidation:
+      properties:
+        contacts:
+          items:
+            required:
+            - firstName
+            - lastName
+            - email
+            - affiliation
+            - country
+          minItems: 1
+      required:
+      - projectName
+      - contacts
+      # ensure we have a program name when project name is "other"
+      if:
+        properties:
+          projectName:
+            const: "other"
+      then:
+        required: [ programName ]
+
+  - targetName: MicrosporidiaDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:MICROSPORIDIA_ENABLED:-false}
+
+  - targetName: OrthoMCL
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:ORTHO_ENABLED:-false}
+
+  - targetName: PiroplasmaDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:PIROPLASMA_ENABLED:-false}
+
+  - targetName: PlasmoDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:PLASMO_ENABLED:-false}
+
+  - targetName: ToxoDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:TOXO_ENABLED:-false}
+
+  - targetName: TrichDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:TRICH_ENABLED:-false}
+
+  - targetName: TriTrypDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:TRITRYP_ENABLED:-false}
+
+  - targetName: VectorBase
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:VECTOR_ENABLED:-false}
+
+  - targetName: VEuPathDB
+    controlDb: *dbConfig
+    dataDb: *dbConfig
+    enabled: ${env:UNIDB_ENABLED:-false}
+

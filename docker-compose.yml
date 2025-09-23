@@ -1,0 +1,504 @@
+networks:
+  internal:
+    external: false
+  traefik:
+    external: true
+  monitoring-ext:
+    external: true
+  rabbitmq:
+    external: true
+
+volumes:
+  cache-db-data: {}
+
+services:
+
+  cache-db:
+    image: veupathdb/vdi-internal-db:${CACHE_DB_TAG:-prod}
+    environment:
+      POSTGRES_USER: vdi
+      POSTGRES_PASSWORD: ${CACHE_DB_PASSWORD}
+      POSTGRES_DB: cache-db
+    healthcheck:
+      test: "pg_isready -U vdi -d vdi"
+      start_period: 30s
+      start_interval: 3s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+    - internal
+    volumes:
+    - cache-db-data:/var/lib/postgresql/data
+    labels:
+      com.centurylinklabs.watchtower.enable: "${CACHE_DB_WATCHTOWER:-true}"
+
+  kafka:
+    image: veupathdb/apache-kafka:${KAFKA_TAG:-prod}
+    healthcheck:
+      test: nc -z localhost 9092 || exit 1
+      start_period: 30s
+      start_interval: 5s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_LISTENERS:-PLAINTEXT://kafka:9092}
+    networks:
+    - internal
+    labels:
+      com.centurylinklabs.watchtower.enable: "${KAFKA_WATCHTOWER:-true}"
+
+  service:
+    image: veupathdb/vdi-service:${SERVICE_TAG:-prod}
+    depends_on:
+      cache-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    links:
+    - cache-db
+    - kafka
+    networks:
+    - internal
+    - traefik
+    - monitoring-ext
+    - rabbitmq
+
+    stop_grace_period: 1m
+
+    volumes:
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+
+    environment:
+      JVM_ARGS: ${SERVICE_JVM_ARGS}
+      JVM_MEM_ARGS: ${SERVICE_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      ADMIN_AUTH_TOKEN: ${ADMIN_AUTH_TOKEN}
+      CACHE_DB_PASSWORD: ${CACHE_DB_PASSWORD}
+
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
+      KEY_STORE_FILE: ${KEY_STORE_FILE}
+      KEY_STORE_PASS_PHRASE: ${KEY_STORE_PASS_PHRASE}
+
+      S3_HOST: ${S3_HOST}
+      S3_ACCESS_TOKEN: ${S3_ACCESS_TOKEN}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+
+      GLOBAL_RABBIT_HOST: ${GLOBAL_RABBIT_HOST}
+      GLOBAL_RABBIT_USERNAME: ${GLOBAL_RABBIT_USERNAME}
+      GLOBAL_RABBIT_PASSWORD: ${GLOBAL_RABBIT_PASSWORD}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${SERVICE_WATCHTOWER:-true}"
+      traefik.http.services.${TRAEFIK_SERVICE_ROUTER:-vdi-dev}.loadbalancer.server.port: "80"
+      traefik.http.routers.${TRAEFIK_SERVICE_ROUTER:-vdi-dev}.rule: "Host(`${TRAEFIK_VDI_HOST:-vdi-dev.local.apidb.org}`)"
+      traefik.http.routers.${TRAEFIK_SERVICE_ROUTER:-vdi-dev}.tls: "${USE_TRAEFIK_SSL:-true}"
+      traefik.http.routers.${TRAEFIK_SERVICE_ROUTER:-vdi-dev}.entrypoints: "${TRAEFIK_ENTRYPOINTS:-local}"
+      traefik.docker.network: "traefik"
+
+  plugin-bigwig:
+    image: veupathdb/vdi-plugin-bigwig:${PLUGIN_BIGWIG_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - bigwig
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_BIGWIG_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_BIGWIG_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_BIGWIG_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-biom:
+    image: veupathdb/vdi-plugin-biom:${PLUGIN_BIOM_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - biom
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_BIOM_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_BIOM_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_BIOM_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-genelist:
+    image: veupathdb/vdi-plugin-genelist:${PLUGIN_GENELIST_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - genelist
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_GENELIST_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_GENELIST_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_GENELIST_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-isasimple:
+    image: veupathdb/vdi-plugin-isasimple:${PLUGIN_ISASIMPLE_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - isasimple
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_ISASIMPLE_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_ISASIMPLE_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_ISASIMPLE_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-noop:
+    image: veupathdb/vdi-plugin-noop:${PLUGIN_NOOP_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - noop
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_NOOP_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_NOOP_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_NOOP_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-wrangler:
+    image: veupathdb/vdi-plugin-wrangler:${PLUGIN_WRANGLER_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - wrangler
+      monitoring-ext: { }
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_WRANGLER_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_WRANGLER_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_WRANGLER_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}
+
+  plugin-rnaseq:
+    image: veupathdb/vdi-plugin-rnaseq:${PLUGIN_RNASEQ_TAG:-prod}
+    networks:
+      internal:
+        aliases:
+        - rnaseq
+      monitoring-ext: {}
+    healthcheck:
+      test: nc -zv localhost:80
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
+    labels:
+      prometheus.scrape_enabled: "true"
+      com.centurylinklabs.watchtower.enable: "${PLUGIN_RNASEQ_WATCHTOWER:-true}"
+    volumes:
+    - type: bind
+      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
+      target: /datasets
+    - type: bind
+      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
+      target: /etc/vdi/config.yml
+      read_only: true
+    environment:
+      JVM_ARGS: ${PLUGIN_RNASEQ_JVM_ARGS}
+      JVM_MEM_ARGS: ${PLUGIN_RNASEQ_JVM_MEM_ARGS}
+
+      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
+
+      SITE_BUILD: ${SITE_BUILD}
+
+      # VPDB Application Database Connection Config
+      LDAP_SERVER: ${LDAP_SERVER}
+      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
+      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
+      AMOEBA_LDAP: ${AMOEBA_LDAP}
+      CRYPTO_LDAP: ${CRYPTO_LDAP}
+      FUNGI_LDAP: ${FUNGI_LDAP}
+      GIARDIA_LDAP: ${GIARDIA_LDAP}
+      HOST_LDAP: ${HOST_LDAP}
+      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
+      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
+      PLASMO_LDAP: ${PLASMO_LDAP}
+      TOXO_LDAP: ${TOXO_LDAP}
+      TRICH_LDAP: ${TRICH_LDAP}
+      TRITRYP_LDAP: ${TRITRYP_LDAP}
+      VECTOR_LDAP: ${VECTOR_LDAP}
+      ORTHO_LDAP: ${ORTHO_LDAP}
+      CLINEPI_LDAP: ${CLINEPI_LDAP}
+      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
+      UNIDB_LDAP: ${UNIDB_LDAP}

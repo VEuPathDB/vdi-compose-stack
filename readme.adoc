@@ -1,0 +1,122 @@
+= VDI Service Docker Compose Stack
+:toc:
+:source-highlighter: highlight.js
+:highlightjs-theme: github
+:compose-ref: https://docs.docker.com/reference/cli/docker/compose
+
+== Development
+
+For developer use, this repository includes a makefile with shortcuts for
+performing the standard docker compose operations, including a full-stack
+rebuild.
+
+
+=== Make Targets
+
+build::
+Performs a full service stack build from source.  This will used cached build
+layers from the host machine if they are available.  Use `OPTIONS` to change
+that behavior if desired.
+
+up::
+Runs {compose-ref}/up[`docker compose up`], expecting a `.env` file in the
+project root directory by default.
+
+down::
+Runs {compose-ref}/down[`docker compose down`].
+
+start::
+Runs {compose-ref}/start[`docker compose start`].
+
+stop::
+Runs {compose-ref}/stop[`docker compose stop`].
+
+restart::
+Runs {compose-ref}/restart[`docker compose restart`].
+
+logs::
+Runs {compose-ref}/logs[`docker compose logs`].
+
+compose::
+Runs the compose command specified by use of the `COMMAND` parameter.
+
+
+
+=== Compose Parameters
+
+`ENV_FILE`::
+Path to the environment file to use with the docker compose command.
++
+Default value is `${PWD}/.env`
++
+.Example
+[source, shell]
+----
+# runs docker compose top
+make compose ENV_FILE="/home/me/my/top/secret/variables.env"
+----
+
+`COMPOSE_FILES`::
+Paths to additional docker compose config files that should be included in the
+compose command.
++
+.Example
+[source, shell]
+----
+# adds docker-compose.ssh.yml to the compose file list
+make compose COMPOSE_FILES=docker-compose.ssh.yml
+----
+
+`COMMAND`::
+Docker compose command to execute.
++
+Default value is dependent on make target, for the `compose` target, the default
+value is `--help`
++
+.Example
+[source, shell]
+----
+# runs docker compose top
+make compose COMMAND="top"
+----
+
+
+`OPTIONS`::
+Additional CLI options that will be passed to the specific compose command.
++
+.Example
+[source, shell]
+----
+# remove volumes as part of the compose down command
+make down OPTIONS=-v
+----
+
+
+`SERVICES`::
+Limit the compose command to the provided target services.
++
+.Example
+[source, shell]
+----
+# (re)create the wrangler and noop plugin containers
+make up SERVICES="plugin-wrangler plugin-noop"
+----
+
+
+
+== License
+
+Copyright 2025 VEuPathDB
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied.
+
+See the License for the specific language governing permissions and limitations
+under the License.
