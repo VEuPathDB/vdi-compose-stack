@@ -60,10 +60,65 @@ restart: compose
 logs: COMMAND := logs
 logs: compose
 
+.PHONY: log
+log: logs
+
+.PHONY: pull
+pull: COMMAND := pull
+pull: compose
+
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
 	docker compose --env-file "$(ENV_FILE)" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)
+
+.PHONY: log-bigwig
+log-bigwig: SERVICES := plugin-bigwig
+log-bigwig: logs
+
+.PHONY: log-biom
+log-biom: SERVICES := plugin-biom
+log-biom: logs
+
+.PHONY: log-example
+log-example: SERVICES := plugin-example
+log-example: logs
+
+.PHONY: log-genelist
+log-genelist: SERVICES := plugin-genelist
+log-genelist: logs
+
+.PHONY: log-isasimple
+log-isasimple: SERVICES := plugin-isasimple
+log-isasimple: logs
+
+.PHONY: log-noop
+log-noop: SERVICES := plugin-noop
+log-noop: logs
+
+.PHONY: log-rnaseq
+log-rnaseq: SERVICES := plugin-rnaseq
+log-rnaseq: logs
+
+.PHONY: log-wrangler
+log-wrangler: SERVICES := plugin-wrangler
+log-wrangler: logs
+
+.PHONY: log-service
+log-service: SERVICES := service
+log-service: logs
+
+.PHONY: log-kafka
+log-kafka: SERVICES := kafka
+log-kafka: logs
+
+.PHONY: log-postgres
+log-postgres: SERVICES := cachedb
+log-postgres: logs
+
+.PHONY: log-app-db
+log-app-db: SERVICES := phony-app-db
+log-app-db: logs
 
 define PROJECT_REPOS_SANS_BIOM
 vdi-service
