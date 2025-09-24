@@ -19,7 +19,6 @@ definitions:
   vdiControlSchema: &vdiControlSchema vdi_control_prod_${env:LOCATION_INDICATOR}
   vdiDataSchema: &vdiDataSchema vdi_datasets_prod_${env:LOCATION_INDICATOR}
 
-
 containerCore:
   authentication:
     authEnabled: true
@@ -61,8 +60,6 @@ vdi:
   kafka:
     servers:
     - kafka:9092
-    listeners:
-    - PLAINTEXT://kafka:9092
 
   cacheDb:
     username: vdi

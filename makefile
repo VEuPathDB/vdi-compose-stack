@@ -61,7 +61,7 @@ logs: COMMAND := logs
 logs: compose
 
 .PHONY: compose
-compose: COMPOSE_FILES := $(addprefix -f ,config/production-config.yml config/local-dev-config.yml $(COMPOSE_FILES))
+compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
 	docker compose --env-file "$(ENV_FILE)" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)
 
