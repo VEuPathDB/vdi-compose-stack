@@ -4,6 +4,8 @@ OPTIONS :=
 COMMAND := --help
 COMPOSE_FILES :=
 
+SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env env/example.local.env | head -n1 | cut -d'=' -f2)
+
 MAKEFLAGS += --no-print-directory
 .ONESHELL:
 
@@ -38,7 +40,8 @@ build:
 
 .PHONY: up
 up: COMMAND := up
-up: compose
+up: OPTIONS += --detach
+up: __run_prereqs compose
 
 .PHONY: down
 down: COMMAND := down
@@ -46,7 +49,8 @@ down: compose
 
 .PHONY: start
 start: COMMAND := start
-start: compose
+start: OPTIONS += --detach
+start: __run_prereqs compose
 
 .PHONY: stop
 stop: COMMAND := stop
@@ -54,7 +58,8 @@ stop: compose
 
 .PHONY: restart
 restart: COMMAND := restart
-restart: compose
+restart: OPTIONS += --detach
+restart: __run_prereqs compose
 
 .PHONY: logs
 logs: COMMAND := logs
@@ -193,3 +198,13 @@ __test_env_file:
 		echo
 		exit 1
 	fi
+
+.PHONY: __run_prereqs
+__run_prereqs:
+	@if [ -z "$(SITE_BUILD)" ]; then
+		echo
+		echo -e "\033[91mNo site build number specified!\033[39m"
+		echo
+		exit 1
+	fi
+	mkdir -p tmp/$(SITE_BUILD)
