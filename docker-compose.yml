@@ -54,14 +54,24 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+
     links:
     - cache-db
     - kafka
+
     networks:
     - internal
     - traefik
     - monitoring-ext
     - rabbitmq
+
+    healthcheck:
+      test: nc -zv localhost 80 || exit 1
+      start_period: 15s
+      start_interval: 3s
+      interval: 1m
+      retries: 3
+      timeout: 2s
 
     stop_grace_period: 1m
 
