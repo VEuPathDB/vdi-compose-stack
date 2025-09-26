@@ -19,6 +19,7 @@ definitions:
     username: testUsername
     password: testPassword
     server: phony-app-db:5432
+    platform: postgres
     name: vdi
 
 containerCore:
@@ -26,7 +27,12 @@ containerCore:
     bindPort: 80
     enableCors: true
   authentication:
-    authEnabled: false
+    authEnabled: true
+    adminToken: ${env:ADMIN_AUTH_TOKEN}
+    oauth:
+      clientId: ${env:OAUTH_CLIENT_ID}
+      clientSecret: ${env:OAUTH_CLIENT_SECRET}
+      url: https://eupathdb.org/oauth
 
 vdi:
   siteBuild: ${env:SITE_BUILD}
