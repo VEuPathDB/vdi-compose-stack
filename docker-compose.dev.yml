@@ -85,7 +85,7 @@ services:
         - example
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -102,7 +102,7 @@ services:
     environment:
       LDAP_SERVER: ${LDAP_SERVER}
       ORACLE_BASE_DN: ${DB_LOOKUP_BASE_DN}
-      CUSTOM_PATH: ${PLUGIN_HANDLER_NOOP_CUSTOM_PATH}
+      CUSTOM_PATH: ${PLUGIN_EXAMPLE_CUSTOM_PATH}
       SITE_BUILD: ${SITE_BUILD}
       DATASET_INSTALL_ROOT: /datasets
 

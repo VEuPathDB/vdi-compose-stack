@@ -42,8 +42,6 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_LISTENERS:-PLAINTEXT://kafka:9092}
     networks:
     - internal
     labels:
@@ -136,7 +134,7 @@ services:
         - bigwig
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -190,7 +188,7 @@ services:
         - biom
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -244,7 +242,7 @@ services:
         - genelist
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -295,7 +293,7 @@ services:
         - isasimple
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -349,7 +347,7 @@ services:
         - noop
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -403,7 +401,7 @@ services:
         - wrangler
       monitoring-ext: { }
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -457,7 +455,7 @@ services:
         - rnaseq
       monitoring-ext: {}
     healthcheck:
-      test: nc -zv localhost:80
+      test: nc -zv localhost 80 || exit 1
       start_period: 15s
       start_interval: 3s
       interval: 1m
