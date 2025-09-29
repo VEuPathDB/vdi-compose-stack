@@ -15,13 +15,20 @@ definitions:
   - TriTrypDB
   - VectorBase
   - VEuPathDB
-  dbConfig: &dbConfig
+  ctrlDbConfig: &ctrlDbConfig
     username: testUsername
     password: testPassword
     server: phony-app-db:5432
     platform: postgres
     name: vdi
-    schema: vdi
+    schema: vdi_control_test
+  dataDbConfig: &dataDbConfig
+    username: testUsername
+    password: testPassword
+    server: phony-app-db:5432
+    platform: postgres
+    name: vdi
+    schema: vdi_dataset_test
 
 containerCore:
   http:
@@ -140,13 +147,13 @@ vdi:
 
   installTargets:
   - targetName: AmoebaDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:AMOEBA_ENABLED:-false}
 
   - targetName: ClinEpiDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:CLINEPI_ENABLED:-false}
     metaValidation:
       properties:
@@ -175,28 +182,28 @@ vdi:
         required: [ programName ]
 
   - targetName: CryptoDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:CRYPTO_ENABLED:-false}
 
   - targetName: FungiDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:FUNGI_ENABLED:-false}
 
   - targetName: GiardiaDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:GIARDIA_ENABLED:-false}
 
   - targetName: HostDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:HOST_ENABLED:-false}
 
   - targetName: MicrobiomeDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:MICROBIOME_ENABLED:-false}
     metaValidation:
       properties:
@@ -221,48 +228,48 @@ vdi:
         required: [ programName ]
 
   - targetName: MicrosporidiaDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:MICROSPORIDIA_ENABLED:-false}
 
   - targetName: OrthoMCL
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:ORTHO_ENABLED:-false}
 
   - targetName: PiroplasmaDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:PIROPLASMA_ENABLED:-false}
 
   - targetName: PlasmoDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:PLASMO_ENABLED:-false}
 
   - targetName: ToxoDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:TOXO_ENABLED:-false}
 
   - targetName: TrichDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:TRICH_ENABLED:-false}
 
   - targetName: TriTrypDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:TRITRYP_ENABLED:-false}
 
   - targetName: VectorBase
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:VECTOR_ENABLED:-false}
 
   - targetName: VEuPathDB
-    controlDb: *dbConfig
-    dataDb: *dbConfig
+    controlDb: *ctrlDbConfig
+    dataDb: *dataDbConfig
     enabled: ${env:UNIDB_ENABLED:-false}
 
   daemons:

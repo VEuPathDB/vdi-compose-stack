@@ -118,12 +118,13 @@ log-kafka: SERVICES := kafka
 log-kafka: logs
 
 .PHONY: log-postgres
-log-postgres: SERVICES := cachedb
+log-postgres: SERVICES := cache-db
 log-postgres: logs
 
 .PHONY: log-app-db
 log-app-db: SERVICES := phony-app-db
 log-app-db: logs
+
 
 define PROJECT_REPOS_SANS_BIOM
 vdi-service
