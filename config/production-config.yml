@@ -71,14 +71,14 @@ vdi:
       server: bigwig:80
       dataTypes:
       - name: bigwigfiles
-        displayName: bigWig
+        category: bigWig
         version: 1.0
       projectIds: *genomicsProjects
     biom:
       server: biom:80
       dataTypes:
       - name: biom
-        displayName: BIOM
+        category: BIOM
         version: 1.0
       projectIds:
       - MicrobiomeDB
@@ -86,14 +86,14 @@ vdi:
       server: genelist:80
       dataTypes:
       - name: genelist
-        displayName: Gene List
+        category: Gene List
         version: 1.0
       projectIds: *genomicsProjects
     isasimple:
       server: isasimple:80
       dataTypes:
       - name: isasimple
-        displayName: ISA Study
+        category: ISA Study
         version: 1.0
       projectIds:
       - ClinEpiDB
@@ -101,21 +101,21 @@ vdi:
       server: noop:80
       dataTypes:
       - name: lightweight
-        displayName: Lightweight
+        category: Lightweight
         version: 1.0
       typeChangesEnabled: true
     wrangler:
       server: wrangler:80
       dataTypes:
       - name: phenotype
-        displayName: Phenotype
+        category: Phenotype
         version: 1.0
       projectIds: *genomicsProjects
     rnaseq:
       server: rnaseq:80
       dataTypes:
       - name: rnaseq
-        displayName: RNA-Seq
+        category: RNA-Seq
         version: 1.0
       projectIds: *genomicsProjects
 
