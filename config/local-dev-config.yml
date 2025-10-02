@@ -35,7 +35,6 @@ containerCore:
     bindPort: 80
     enableCors: true
   authentication:
-    authEnabled: true
     adminToken: ${env:ADMIN_AUTH_TOKEN}
     oauth:
       clientId: ${env:OAUTH_CLIENT_ID}

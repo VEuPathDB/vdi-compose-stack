@@ -21,7 +21,6 @@ definitions:
 
 containerCore:
   authentication:
-    authEnabled: true
     oauth:
       clientId: ${env:OAUTH_CLIENT_ID}
       clientSecret: ${env:OAUTH_CLIENT_SECRET}
