@@ -11,7 +11,23 @@ MAKEFLAGS += --no-print-directory
 
 .PHONY: default
 default:
-	exit 1
+	@awk '{ \
+	  if ($$1 == "#") { \
+	    $$1=""; \
+	    if (ht != "") { \
+	      ht=ht "\n"; \
+	    } \
+	    if ($$2 == "|") { \
+	      $$2=" "; \
+	    } \
+	    ht=ht "    " $$0; \
+	  } else if ($$1 == ".PHONY:") { \
+	    print "  \033[94m" $$2 "\033[39m\n" ht "\n"; \
+	    ht="" \
+	  } else {\
+	    ht="" \
+	  } \
+	}' <(grep -B10 '.PHONY' makefile | grep -v '[═║@]\|default\|__' | grep -E '^[.#]|$$' | grep -v '_') | less
 
 define BUILD_WARNING
 
@@ -29,6 +45,11 @@ define BUILD_WARNING
 
 endef
 
+# Pulls down and performs a full build of all the images referenced in the
+# docker compose stack definition files.
+#
+# This will use cached build layers from the host system if available, use the
+# OPTIONS make var to change that behavior if desired.
 .PHONY: build
 build:
 	@echo -e "$(BUILD_WARNING)"
@@ -38,89 +59,152 @@ build:
 		*) exit 0;;
 	esac
 
+# Runs docker compose up, expecting a file named `.env` in the project root
+# directory by default.
 .PHONY: up
 up: COMMAND := up
 up: OPTIONS += --detach
 up: __run_prereqs compose
 
+# Runs docker compose down.
+#
+# Does not prune volumes or networks by default.
 .PHONY: down
 down: COMMAND := down
 down: compose
 
+# Runs docker compose start.
 .PHONY: start
 start: COMMAND := start
 start: OPTIONS += --detach
 start: __run_prereqs compose
 
+# Runs docker compose stop.
 .PHONY: stop
 stop: COMMAND := stop
 stop: compose
 
+# Runs docker compose restart.
 .PHONY: restart
 restart: COMMAND := restart
 restart: OPTIONS += --detach
 restart: __run_prereqs compose
 
+# Runs "docker compose logs" printing logs for the full stack.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: logs
 logs: COMMAND := logs
 logs: compose
 
+# Runs "docker compose logs" printing logs for the full stack.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log
 log: logs
 
+# Runs docker compose pull.
 .PHONY: pull
 pull: COMMAND := pull
 pull: compose
 
+# Runs an arbitrary compose command provided by the COMMAND make var.
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
 	docker compose --env-file "$(ENV_FILE)" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)
 
+# Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
+# plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-bigwig
 log-bigwig: SERVICES := plugin-bigwig
 log-bigwig: logs
 
+# Runs "docker compose logs plugin-biom" printing logs for only the biom plugin
+# service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-biom
 log-biom: SERVICES := plugin-biom
 log-biom: logs
 
+# Runs "docker compose logs plugin-example" printing logs for only the example
+# plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-example
 log-example: SERVICES := plugin-example
 log-example: logs
 
+# Runs "docker compose logs plugin-genelist" printing logs for only the genelist
+# plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-genelist
 log-genelist: SERVICES := plugin-genelist
 log-genelist: logs
 
+# Runs "docker compose logs plugin-isasimple" printing logs for only the
+# isasimple plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-isasimple
 log-isasimple: SERVICES := plugin-isasimple
 log-isasimple: logs
 
+# Runs "docker compose logs plugin-noop" printing logs for only the noop plugin
+# service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-noop
 log-noop: SERVICES := plugin-noop
 log-noop: logs
 
+# Runs "docker compose logs plugin-rnaseq" printing logs for only the rnaseq
+# plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-rnaseq
 log-rnaseq: SERVICES := plugin-rnaseq
 log-rnaseq: logs
 
+# Runs "docker compose logs plugin-wrangler" printing logs for only the wrangler
+# plugin service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-wrangler
 log-wrangler: SERVICES := plugin-wrangler
 log-wrangler: logs
 
+# Runs "docker compose logs service" printing logs for only the core REST
+# service.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-service
 log-service: SERVICES := service
 log-service: logs
 
+# Runs "docker compose logs kafka" printing logs for only the Kafka server.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-kafka
 log-kafka: SERVICES := kafka
 log-kafka: logs
 
-.PHONY: log-postgres
-log-postgres: SERVICES := cache-db
-log-postgres: logs
+# Runs "docker compose logs cache-db" printing logs for only the internal cache
+# database server.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
+.PHONY: log-cache-db
+log-cache-db: SERVICES := cache-db
+log-cache-db: logs
 
+# Runs "docker compose logs cache-db" printing logs for only the local test app
+# database server.
+#
+# Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: log-app-db
 log-app-db: SERVICES := phony-app-db
 log-app-db: logs

@@ -13,6 +13,14 @@ rebuild.
 
 === Make Targets
 
+'{BLANK}'::
++
+--
+Simply running `make` with no target prints out all the available targets.
+--
+
+==== Common Targets
+
 build::
 Performs a full service stack build from source.  This will used cached build
 layers from the host machine if they are available.  Use `OPTIONS` to change
@@ -37,9 +45,9 @@ Runs {compose-ref}/restart[`docker compose restart`].
 logs::
 Runs {compose-ref}/logs[`docker compose logs`].
 
-compose::
-Runs the compose command specified by use of the `COMMAND` parameter.
-
+log-service::
+Runs {compose-ref}/logs[`docker compose logs service`], printing out only the
+logs from the HTTP REST server.
 
 
 === Compose Parameters
