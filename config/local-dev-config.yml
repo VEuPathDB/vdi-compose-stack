@@ -141,12 +141,12 @@ vdi:
   - targetName: AmoebaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:AMOEBA_ENABLED:-false}
+    enabled: false
 
   - targetName: ClinEpiDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:CLINEPI_ENABLED:-false}
+    enabled: true
     metaValidation:
       properties:
         contacts:
@@ -176,27 +176,27 @@ vdi:
   - targetName: CryptoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:CRYPTO_ENABLED:-false}
+    enabled: false
 
   - targetName: FungiDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:FUNGI_ENABLED:-false}
+    enabled: false
 
   - targetName: GiardiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:GIARDIA_ENABLED:-false}
+    enabled: false
 
   - targetName: HostDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:HOST_ENABLED:-false}
+    enabled: false
 
   - targetName: MicrobiomeDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:MICROBIOME_ENABLED:-false}
+    enabled: true
     metaValidation:
       properties:
         contacts:
@@ -222,47 +222,47 @@ vdi:
   - targetName: MicrosporidiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:MICROSPORIDIA_ENABLED:-false}
+    enabled: false
 
   - targetName: OrthoMCL
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:ORTHO_ENABLED:-false}
+    enabled: false
 
   - targetName: PiroplasmaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:PIROPLASMA_ENABLED:-false}
+    enabled: false
 
   - targetName: PlasmoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:PLASMO_ENABLED:-false}
+    enabled: true
 
   - targetName: ToxoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:TOXO_ENABLED:-false}
+    enabled: false
 
   - targetName: TrichDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:TRICH_ENABLED:-false}
+    enabled: false
 
   - targetName: TriTrypDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:TRITRYP_ENABLED:-false}
+    enabled: false
 
   - targetName: VectorBase
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:VECTOR_ENABLED:-false}
+    enabled: false
 
   - targetName: VEuPathDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: ${env:UNIDB_ENABLED:-false}
+    enabled: false
 
   daemons:
     reconciler:
