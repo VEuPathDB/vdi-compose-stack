@@ -1,5 +1,4 @@
 ENV_FILE := ${PWD}/.env
-SERVICES :=
 OPTIONS :=
 COMMAND := --help
 COMPOSE_FILES :=
@@ -28,6 +27,24 @@ default:
 	    ht="" \
 	  } \
 	}' <(grep -B10 '.PHONY' makefile | grep -v '[═║@]\|default\|__' | grep -E '^[.#]|$$' | grep -v '_') | less
+
+
+define PROJECT_REPOS_SANS_BIOM
+vdi-service
+vdi-plugin-bigwig
+vdi-plugin-example
+vdi-plugin-genelist
+vdi-plugin-isasimple
+vdi-plugin-noop
+vdi-plugin-rnaseq
+vdi-plugin-wrangler
+vdi-internal-db
+endef
+
+define PROJECT_REPOS
+$(PROJECT_REPOS_SANS_BIOM)
+vdi-plugin-biom
+endef
 
 define BUILD_WARNING
 
@@ -95,6 +112,8 @@ restart: __run_prereqs compose
 # Logs may be tailed by providing OPTIONS=-f in the make call.
 .PHONY: logs
 logs: COMMAND := logs
+logs: OPTIONS += -f
+logs: SERVICES ?= $(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))
 logs: compose
 
 # Runs "docker compose logs" printing logs for the full stack.
@@ -112,7 +131,7 @@ pull: compose
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
-	docker compose --env-file "$(ENV_FILE)" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)
+	@script -qefc "docker compose --env-file \"$(ENV_FILE)\" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)" /dev/null 2>&1 | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
@@ -209,23 +228,6 @@ log-cache-db: logs
 log-app-db: SERVICES := phony-app-db
 log-app-db: logs
 
-
-define PROJECT_REPOS_SANS_BIOM
-vdi-service
-vdi-plugin-bigwig
-vdi-plugin-example
-vdi-plugin-genelist
-vdi-plugin-isasimple
-vdi-plugin-noop
-vdi-plugin-rnaseq
-vdi-plugin-wrangler
-vdi-internal-db
-endef
-
-define PROJECT_REPOS
-$(PROJECT_REPOS_SANS_BIOM)
-vdi-plugin-biom
-endef
 
 .PHONY: __the_big_build_prereqs
 __the_big_build_prereqs:
