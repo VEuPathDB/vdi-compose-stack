@@ -13,4 +13,5 @@ RUN apk add --no-cache git \
  && sed "$SED_PAT" createVdiControlTables.sql > /docker-entrypoint-initdb.d/02-createVdiControlTables.sql \
  && sed "$SED_PAT" createUserDatasetTypeTables.sql > /docker-entrypoint-initdb.d/03-createUserDatasetTypeTables.sql \
  && sed "$SED_PAT" createEntityGraphTables.sql > /docker-entrypoint-initdb.d/04-createEntityGraphTables.sql \
+ && echo "CREATE ROLE vdi_w;" > /docker-entrypoint-initdb.d/05-createRoles.sql \
  && rm -rf /VdiSchema
