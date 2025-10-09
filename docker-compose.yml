@@ -60,7 +60,6 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     labels:
       com.centurylinklabs.watchtower.enable: "${KAFKA_WATCHTOWER:-true}"
-
   service:
     image: veupathdb/vdi-service:${SERVICE_TAG:-prod}
     depends_on:
@@ -79,8 +78,8 @@ services:
     - monitoring-ext
     - rabbitmq
 
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
+    healthcheck: &healthCheck
+      test: nc -zv localhost 80
       start_period: 15s
       start_interval: 3s
       interval: 1m
@@ -90,7 +89,8 @@ services:
     stop_grace_period: 1m
 
     volumes:
-    - type: bind
+    - &configBind
+      type: bind
       source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
       target: /etc/vdi/config.yml
       read_only: true
@@ -157,24 +157,16 @@ services:
         aliases:
         - bigwig
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_BIGWIG_WATCHTOWER:-true}"
     volumes:
-    - type: bind
+    - *configBind
+    - &datasetsBind
+      type: bind
       source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
       target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
     environment:
       JVM_ARGS: ${PLUGIN_BIGWIG_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_BIGWIG_JVM_MEM_ARGS}
@@ -211,24 +203,13 @@ services:
         aliases:
         - biom
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_BIOM_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_BIOM_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_BIOM_JVM_MEM_ARGS}
@@ -265,24 +246,13 @@ services:
         aliases:
         - genelist
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_GENELIST_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_GENELIST_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_GENELIST_JVM_MEM_ARGS}
@@ -316,24 +286,13 @@ services:
         aliases:
         - isasimple
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_ISASIMPLE_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_ISASIMPLE_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_ISASIMPLE_JVM_MEM_ARGS}
@@ -370,24 +329,13 @@ services:
         aliases:
         - noop
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_NOOP_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_NOOP_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_NOOP_JVM_MEM_ARGS}
@@ -424,24 +372,13 @@ services:
         aliases:
         - wrangler
       monitoring-ext: { }
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_WRANGLER_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_WRANGLER_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_WRANGLER_JVM_MEM_ARGS}
@@ -478,24 +415,13 @@ services:
         aliases:
         - rnaseq
       monitoring-ext: {}
-    healthcheck:
-      test: nc -zv localhost 80 || exit 1
-      start_period: 15s
-      start_interval: 3s
-      interval: 1m
-      retries: 3
-      timeout: 2s
+    healthcheck: *healthCheck
     labels:
       prometheus.scrape_enabled: "true"
       com.centurylinklabs.watchtower.enable: "${PLUGIN_RNASEQ_WATCHTOWER:-true}"
     volumes:
-    - type: bind
-      source: ${DATASET_INSTALL_DIR_LOCAL_PATH}
-      target: /datasets
-    - type: bind
-      source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
-      target: /etc/vdi/config.yml
-      read_only: true
+    - *configBind
+    - *datasetsBind
     environment:
       JVM_ARGS: ${PLUGIN_RNASEQ_JVM_ARGS}
       JVM_MEM_ARGS: ${PLUGIN_RNASEQ_JVM_MEM_ARGS}
