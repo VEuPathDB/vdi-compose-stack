@@ -28,7 +28,7 @@ definitions:
     server: phony-app-db:5432
     platform: postgres
     name: vdi
-    schema: vdi_dataset_test
+    schema: vdi_datasets_test
 
 containerCore:
   http:
