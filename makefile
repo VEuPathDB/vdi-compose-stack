@@ -2,6 +2,7 @@ ENV_FILE := ${PWD}/.env
 OPTIONS :=
 COMMAND := --help
 COMPOSE_FILES :=
+SERVICES :=
 
 SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env env/example.local.env | head -n1 | cut -d'=' -f2)
 
@@ -113,7 +114,6 @@ restart: __run_prereqs compose
 .PHONY: logs
 logs: COMMAND := logs
 logs: OPTIONS += -f
-logs: SERVICES ?= $(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))
 logs: compose
 
 # Runs "docker compose logs" printing logs for the full stack.
@@ -131,7 +131,12 @@ pull: compose
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
-	@script -qefc "docker compose --env-file \"$(ENV_FILE)\" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $(SERVICES)" /dev/null 2>&1 | grep -v 'variable is not set'
+	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then
+		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"
+	else
+		SERVICES="$(SERVICES)"
+	fi
+	@script -qefc "docker compose --env-file \"$(ENV_FILE)\" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $$SERVICES" /dev/null 2>&1 | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
