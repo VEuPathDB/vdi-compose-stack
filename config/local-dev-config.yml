@@ -85,6 +85,9 @@ vdi:
       - name: bigwigfiles
         category: bigWig
         version: 1.0
+        # 500MiB
+        maxFileSize: 524288000
+        allowedFileExtensions: [ ".bw" ]
       projectIds: *genomicsProjects
     biom:
       server: biom:80
@@ -92,6 +95,8 @@ vdi:
       - name: biom
         category: BIOM
         version: 1.0
+        # 100MiB
+        maxFileSize: 104857600
       projectIds:
       - MicrobiomeDB
     example:
@@ -128,6 +133,9 @@ vdi:
       - name: phenotype
         category: Phenotype
         version: 1.0
+        # 10GiB
+        maxFileSize: 10737418240
+        allowedFileExtensions: [ ".txt", ".tsv" ]
       projectIds: *genomicsProjects
     rnaseq:
       server: rnaseq:80
@@ -135,6 +143,8 @@ vdi:
       - name: rnaseq
         category: RNA-Seq
         version: 1.0
+        # 10GiB
+        maxFileSize: 10737418240
       projectIds: *genomicsProjects
 
   installTargets:
