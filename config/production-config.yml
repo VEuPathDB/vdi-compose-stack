@@ -75,7 +75,7 @@ vdi:
         # 500MiB
         maxFileSize: 524288000
         allowedFileExtensions: [ ".bw" ]
-        usesDataDict: true
+        usesDataProperties: true
       projectIds: *genomicsProjects
     biom:
       server: biom:80
