@@ -88,6 +88,12 @@ prep-stack:
 	if [ ! -f .env ]; then
 		cp ../../env/$$SRC_ENV .env
 	fi
+	if [ ! -f docker-compose.yml ]; then
+		cp ../../docker-compose.yml ./
+	fi
+	if [ ! -f docker-compose.dev.yml ]; then
+		cp ../docker-compose.dev.yml ./
+	fi
 
 # Pulls down and performs a full build of all the images referenced in the
 # docker compose stack definition files.
@@ -155,7 +161,7 @@ pull: compose
 
 # Runs an arbitrary compose command provided by the COMMAND make var.
 .PHONY: compose
-compose: COMPOSE_FILES := $(addprefix -f ,../../docker-compose.yml ../../docker-compose.dev.yml $(COMPOSE_FILES))
+compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
 	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then
 		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"
@@ -164,13 +170,13 @@ compose: __test_env_file
 	fi
 
 	if [ -f docker-compose.db.yml ]; then
-		COMPOSE_FILES="$(COMPOSE_FILES) -f ../../docker-compose.db.yml"
+		COMPOSE_FILES="$(COMPOSE_FILES) -f docker-compose.db.yml"
 	else
 		COMPOSE_FILES="$(COMPOSE_FILES)"
 	fi
 
 	if [ -f docker-compose.ssh.yml ]; then
-		COMPOSE_FILES="$(COMPOSE_FILES) -f ../../docker-compose.ssh.yml"
+		COMPOSE_FILES="$(COMPOSE_FILES) -f docker-compose.ssh.yml"
 	else
 		COMPOSE_FILES="$(COMPOSE_FILES)"
 	fi
@@ -337,4 +343,4 @@ __run_prereqs:
 		echo
 		exit 1
 	fi
-	mkdir -p tmp/$(SITE_BUILD)
+	mkdir -p ${PWD}/tmp/$(SITE_BUILD)

@@ -94,6 +94,8 @@ services:
       source: ${CONFIG_MOUNT_SOURCE:-config/production-config.yml}
       target: /etc/vdi/config.yml
       read_only: true
+      bind:
+        create_host_path: false
 
     environment:
       JVM_ARGS: ${SERVICE_JVM_ARGS}
