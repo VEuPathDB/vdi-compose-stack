@@ -1,0 +1,77 @@
+
+volumes:
+  phony-app-db-volume: {}
+
+services:
+  phony-app-db:
+    image: phony-app-db
+    build:
+      dockerfile: phony-app-db.dockerfile
+    ports:
+    - "1521:5432"
+    networks:
+    - internal
+    environment:
+      POSTGRES_DB: vdi
+      POSTGRES_USER: testUsername
+      POSTGRES_PASSWORD: testPassword
+    healthcheck:
+      test: "pg_isready -U testUsername -d vdi"
+      start_period: 30s
+      start_interval: 3s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - phony-app-db-volume:/var/lib/postgresql/data
+
+  service:
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-bigwig:
+    build:
+      context: .vdi-repos/vdi-plugin-bigwig
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-biom:
+    build:
+      context: .vdi-repos/vdi-plugin-biom
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-genelist:
+    build:
+      context: .vdi-repos/vdi-plugin-genelist
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-isasimple:
+    build:
+      context: .vdi-repos/vdi-plugin-isasimple
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-noop:
+    build:
+      context: .vdi-repos/vdi-plugin-noop
+
+  plugin-rnaseq:
+    build:
+      context: .vdi-repos/vdi-plugin-rnaseq
+    depends_on:
+      phony-app-db:
+        condition: service_healthy
+
+  plugin-wrangler:
+    build:
+      context: .vdi-repos/vdi-plugin-wrangler
+    depends_on:
+      phony-app-db:
+        condition: service_healthy

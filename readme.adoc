@@ -3,12 +3,41 @@
 :source-highlighter: highlight.js
 :highlightjs-theme: github
 :compose-ref: https://docs.docker.com/reference/cli/docker/compose
+:gh-org-url: https://github.com/VEuPathDB
 
-== Development
+== Local Development
 
-For developer use, this repository includes a makefile with shortcuts for
+For developer use, this repository includes makefiles with shortcuts for
 performing the standard docker compose operations, including a full-stack
 rebuild.
+
+=== Quick Start
+
+==== Using Remote App DB
+
+. Navigate to link:dev/local-with-remote-appdb/[].
+. From that directory run `make prep-stack` to create a copy of the appropriate
+  stack config file and environment file. +
+_The stack config copy will be named `stack-config.yml`._ +
+_The environment file copy will be named `.env`._
+. Edit the `.env` file and fill in the `APP_DB_*` environment variables with the
+  actual target DB details.
+. Follow the `ssh-compose` section of the
+  {gh-org-url}/util-infra-dev-tools?tab=readme-ov-file#ssh-compose[util-infra-dev-tools]
+  readme to create a `docker-compose.ssh.yml` file.
+. Run `make up` to start up the VDI stack.
+. Run `make logs` to tail the stack logs and ensure the SSH tunnels
+  are successfully established.
+
+
+==== Fully Local
+
+. Navigate to link:dev/fully-local/[].
+. From that directory run `make prep-stack` to create a copy of the appropriate
+stack config file and environment file. +
+_The stack config copy will be named `stack-config.yml`._ +
+_The environment file copy will be named `.env`._
+. Run `make up` to start the VDI stack.
 
 
 === Make Targets
@@ -20,6 +49,10 @@ Simply running `make` with no target prints out all the available targets.
 --
 
 ==== Common Targets
+
+prep-stack::
+Copies the files necessary to run a VDI stack into the working directory that
+`make` was called from.
 
 build::
 Performs a full service stack build from source.  This will used cached build

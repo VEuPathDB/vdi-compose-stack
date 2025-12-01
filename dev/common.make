@@ -4,31 +4,16 @@ COMMAND := --help
 COMPOSE_FILES :=
 SERVICES :=
 
-SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env env/example.local.env | head -n1 | cut -d'=' -f2)
+KIND := $(shell [[ $PWD =~ remote ]] && echo "remote" || echo "local")
+
+ifeq ($(KIND),remote)
+	SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env ../../env/example.partial-local.env 2>/dev/null | head -n1 | cut -d'=' -f2)
+else
+	SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env ../../env/example.full-local.env 2>/dev/null | head -n1 | cut -d'=' -f2)
+endif
 
 MAKEFLAGS += --no-print-directory
 .ONESHELL:
-
-.PHONY: default
-default:
-	@awk '{ \
-	  if ($$1 == "#") { \
-	    $$1=""; \
-	    if (ht != "") { \
-	      ht=ht "\n"; \
-	    } \
-	    if ($$2 == "|") { \
-	      $$2=" "; \
-	    } \
-	    ht=ht "    " $$0; \
-	  } else if ($$1 == ".PHONY:") { \
-	    print "  \033[94m" $$2 "\033[39m\n" ht "\n"; \
-	    ht="" \
-	  } else {\
-	    ht="" \
-	  } \
-	}' <(grep -B10 '.PHONY' makefile | grep -v '[═║@]\|default\|__' | grep -E '^[.#]|$$' | grep -v '_') | less
-
 
 define PROJECT_REPOS_SANS_BIOM
 vdi-service
@@ -62,6 +47,47 @@ define BUILD_WARNING
 ################################################################################
 
 endef
+
+.PHONY: default
+default:
+	@awk '{ \
+	  if ($$1 == "#") { \
+	    $$1=""; \
+	    if (ht != "") { \
+	      ht=ht "\n"; \
+	    } \
+	    if ($$2 == "|") { \
+	      $$2=" "; \
+	    } \
+	    ht=ht "    " $$0; \
+	  } else if ($$1 == ".PHONY:") { \
+	    print "  \033[94m" $$2 "\033[39m\n" ht "\n"; \
+	    ht="" \
+	  } else {\
+	    ht="" \
+	  } \
+	}' <(grep -B10 '.PHONY' makefile | grep -v '[═║@]\|default\|__' | grep -E '^[.#]|$$' | grep -v '_') | less
+
+.PHONY: prep-stack
+prep-stack:
+	@echo "preparing stack startup requirements"
+	if [ $(KIND) = remote ]; then
+		SRC_CONFIG=partial-local-dev-config.yml
+		SRC_ENV=example.partial-local.env
+		if [ ! -f "docker-compose.ssh.yml" ]; then
+			echo -e "!! \033[91mREMEMBER TO CREATE SSH TUNNEL COMPOSE FILE\033[39m"
+		fi
+	else
+		SRC_CONFIG=full-local-dev-config.yml
+		SRC_ENV=example.full-local.env
+	fi
+
+	if [ ! -f stack-config.yml ]; then
+		cp ../../config/$$SRC_CONFIG stack-config.yml
+	fi
+	if [ ! -f .env ]; then
+		cp ../../env/$$SRC_ENV .env
+	fi
 
 # Pulls down and performs a full build of all the images referenced in the
 # docker compose stack definition files.
@@ -129,14 +155,27 @@ pull: compose
 
 # Runs an arbitrary compose command provided by the COMMAND make var.
 .PHONY: compose
-compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
+compose: COMPOSE_FILES := $(addprefix -f ,../../docker-compose.yml ../../docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
 	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then
 		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"
 	else
 		SERVICES="$(SERVICES)"
 	fi
-	@script -qefc "docker compose --env-file \"$(ENV_FILE)\" $(COMPOSE_FILES) $(COMMAND) $(OPTIONS) $$SERVICES" /dev/null 2>&1 | grep -v 'variable is not set'
+
+	if [ -f docker-compose.db.yml ]; then
+		COMPOSE_FILES="$(COMPOSE_FILES) -f ../../docker-compose.db.yml"
+	else
+		COMPOSE_FILES="$(COMPOSE_FILES)"
+	fi
+
+	if [ -f docker-compose.ssh.yml ]; then
+		COMPOSE_FILES="$(COMPOSE_FILES) -f ../../docker-compose.ssh.yml"
+	else
+		COMPOSE_FILES="$(COMPOSE_FILES)"
+	fi
+
+	script -qefc "docker compose --env-file \"$(ENV_FILE)\" $$COMPOSE_FILES $(COMMAND) $(OPTIONS) $$SERVICES" /dev/null 2>&1 | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
@@ -232,7 +271,6 @@ log-cache-db: logs
 .PHONY: log-app-db
 log-app-db: SERVICES := phony-app-db
 log-app-db: logs
-
 
 .PHONY: __the_big_build_prereqs
 __the_big_build_prereqs:

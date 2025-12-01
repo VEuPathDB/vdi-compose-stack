@@ -16,19 +16,19 @@ definitions:
   - VectorBase
   - VEuPathDB
   ctrlDbConfig: &ctrlDbConfig
-    username: testUsername
-    password: testPassword
-    server: phony-app-db:5432
+    username: &appDbUser ${env:APP_DB_USERNAME}
+    password: &appDbPass ${env:APP_DB_PASSWORD}
+    server: &appDbServer ${env:APP_DB_SERVER}
     platform: postgres
-    name: vdi
-    schema: vdi_control_test
+    name: &appDbName ${env:APP_DB_NAME}
+    schema: ${env:APP_DB_CTRL_SCHEMA}
   dataDbConfig: &dataDbConfig
-    username: testUsername
-    password: testPassword
-    server: phony-app-db:5432
+    username: *appDbUser
+    password: *appDbPass
+    server: *appDbServer
     platform: postgres
-    name: vdi
-    schema: vdi_datasets_test
+    name: *appDbName
+    schema: ${env:APP_DB_DATA_SCHEMA}
 
 containerCore:
   http:
