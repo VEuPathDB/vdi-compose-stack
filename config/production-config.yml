@@ -94,14 +94,6 @@ vdi:
         category: Gene List
         version: 1.0
       projectIds: *genomicsProjects
-    isasimple:
-      server: isasimple:80
-      dataTypes:
-      - name: isasimple
-        category: ISA Study
-        version: 1.0
-      projectIds:
-      - ClinEpiDB
     noop:
       server: noop:80
       dataTypes:
@@ -127,6 +119,9 @@ vdi:
         # 10GiB
         maxFileSize: 10737418240
         allowedFileExtensions: [ ".txt", ".tsv" ]
+      - name: isasimple
+        category: ISA Study
+        version: 1.0
       projectIds:
       - ClinEpiDB
 
