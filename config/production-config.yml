@@ -127,7 +127,8 @@ vdi:
         # 10GiB
         maxFileSize: 10737418240
         allowedFileExtensions: [ ".txt", ".tsv" ]
-      projectIds: *genomicsProjects
+      projectIds:
+      - ClinEpiDB
 
   installTargets:
   - targetName: AmoebaDB
