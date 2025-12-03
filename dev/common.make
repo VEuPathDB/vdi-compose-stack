@@ -20,7 +20,6 @@ vdi-service
 vdi-plugin-bigwig
 vdi-plugin-example
 vdi-plugin-genelist
-vdi-plugin-isasimple
 vdi-plugin-noop
 vdi-plugin-rnaseq
 vdi-plugin-wrangler
@@ -214,14 +213,6 @@ log-example: logs
 .PHONY: log-genelist
 log-genelist: SERVICES := plugin-genelist
 log-genelist: logs
-
-# Runs "docker compose logs plugin-isasimple" printing logs for only the
-# isasimple plugin service.
-#
-# Logs may be tailed by providing OPTIONS=-f in the make call.
-.PHONY: log-isasimple
-log-isasimple: SERVICES := plugin-isasimple
-log-isasimple: logs
 
 # Runs "docker compose logs plugin-noop" printing logs for only the noop plugin
 # service.

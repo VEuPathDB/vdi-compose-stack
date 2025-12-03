@@ -51,13 +51,6 @@ services:
       phony-app-db:
         condition: service_healthy
 
-  plugin-isasimple:
-    build:
-      context: .vdi-repos/vdi-plugin-isasimple
-    depends_on:
-      phony-app-db:
-        condition: service_healthy
-
   plugin-noop:
     build:
       context: .vdi-repos/vdi-plugin-noop

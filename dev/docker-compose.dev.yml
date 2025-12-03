@@ -150,8 +150,6 @@ services:
         condition: service_healthy
       plugin-genelist:
         condition: service_healthy
-      plugin-isasimple:
-        condition: service_healthy
       plugin-noop:
         condition: service_healthy
       plugin-rnaseq:
@@ -197,10 +195,6 @@ services:
   plugin-genelist:
     build:
       context: .vdi-repos/vdi-plugin-genelist
-
-  plugin-isasimple:
-    build:
-      context: .vdi-repos/vdi-plugin-isasimple
 
   plugin-noop:
     build:

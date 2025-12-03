@@ -281,49 +281,6 @@ services:
       MICROBIOME_LDAP: ${MICROBIOME_LDAP}
       UNIDB_LDAP: ${UNIDB_LDAP}
 
-  plugin-isasimple:
-    image: veupathdb/vdi-plugin-isasimple:${PLUGIN_ISASIMPLE_TAG:-prod}
-    networks:
-      internal:
-        aliases:
-        - isasimple
-      monitoring-ext: {}
-    healthcheck: *healthCheck
-    labels:
-      prometheus.scrape_enabled: "true"
-      com.centurylinklabs.watchtower.enable: "${PLUGIN_ISASIMPLE_WATCHTOWER:-true}"
-    volumes:
-    - *configBind
-    - *datasetsBind
-    environment:
-      JVM_ARGS: ${PLUGIN_ISASIMPLE_JVM_ARGS}
-      JVM_MEM_ARGS: ${PLUGIN_ISASIMPLE_JVM_MEM_ARGS}
-
-      LOCATION_INDICATOR: ${LOCATION_INDICATOR}
-
-      SITE_BUILD: ${SITE_BUILD}
-
-      # VPDB Application Database Connection Config
-      LDAP_SERVER: ${LDAP_SERVER}
-      DB_LOOKUP_BASE_DN: ${DB_LOOKUP_BASE_DN}
-      VDI_APPDB_SCHEMA_PASS: ${VDI_APPDB_SCHEMA_PASS}
-      AMOEBA_LDAP: ${AMOEBA_LDAP}
-      CRYPTO_LDAP: ${CRYPTO_LDAP}
-      FUNGI_LDAP: ${FUNGI_LDAP}
-      GIARDIA_LDAP: ${GIARDIA_LDAP}
-      HOST_LDAP: ${HOST_LDAP}
-      MICROSPORIDIA_LDAP: ${MICROSPORIDIA_LDAP}
-      PIROPLASMA_LDAP: ${PIROPLASMA_LDAP}
-      PLASMO_LDAP: ${PLASMO_LDAP}
-      TOXO_LDAP: ${TOXO_LDAP}
-      TRICH_LDAP: ${TRICH_LDAP}
-      TRITRYP_LDAP: ${TRITRYP_LDAP}
-      VECTOR_LDAP: ${VECTOR_LDAP}
-      ORTHO_LDAP: ${ORTHO_LDAP}
-      CLINEPI_LDAP: ${CLINEPI_LDAP}
-      MICROBIOME_LDAP: ${MICROBIOME_LDAP}
-      UNIDB_LDAP: ${UNIDB_LDAP}
-
   plugin-noop:
     image: veupathdb/vdi-plugin-noop:${PLUGIN_NOOP_TAG:-prod}
     networks:
