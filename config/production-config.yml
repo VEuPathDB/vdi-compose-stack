@@ -100,7 +100,7 @@ vdi:
       - name: lightweight
         category: Lightweight
         version: 1.0
-      typeChangesEnabled: true
+        typeChangesEnabled: true
     rnaseq:
       server: rnaseq:80
       dataTypes:
