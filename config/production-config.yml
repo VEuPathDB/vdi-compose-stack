@@ -85,6 +85,7 @@ vdi:
         version: 1.0
         # 100MiB
         maxFileSize: 104857600
+        allowedFileExtensions: [ ".biom" ]
       projectIds:
       - MicrobiomeDB
     genelist:
