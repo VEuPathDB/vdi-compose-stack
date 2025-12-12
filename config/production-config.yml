@@ -146,30 +146,45 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:CLINEPI_LDAP}
     metaValidation:
-      properties:
-        contacts:
-          minItems: 1
-          items:
+      allOf:
+      - properties:
+          studyCharacteristics:
             required:
-            - firstName
-            - lastName
-            - email
-            - affiliation
-            - country
-        studyCharacteristics:
-          required:
-          - studyDesign
-          - studyType
-      required:
-      - projectName
-      - contacts
+            - studyDesign
+            - studyType
+        required:
+        - studyCharacteristics
+      # fundamental fields
+      - if:
+          properties:
+            visibility:
+              not: { const: "private" }
+          required: [ "visibility" ]
+        then:
+          properties:
+            studyCharacteristics:
+              properties:
+                countries: { minItems: 1 }
+                studySpecies: { minItems: 1 }
+                diseases: { minItems: 1 }
+                associatedFactors: { minItems: 1 }
+                sampleTypes: { minItems: 1 }
+              required:
+              - countries
+              - years
+              - studySpecies
+              - diseases
+              - associatedFactors
+              - participantAges
+              - sampleTypes
       # ensure we have a program name when project name is "other"
-      if:
-        properties:
-          projectName:
-            const: "other"
-      then:
-        required: [ programName ]
+      - if:
+          properties:
+            projectName:
+              const: "other"
+          required: [ "projectName" ]
+        then:
+          required: [ programName ]
 
   - targetName: CryptoDB
     controlDb:
@@ -221,26 +236,42 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:MICROBIOME_LDAP}
     metaValidation:
-      properties:
-        contacts:
-          items:
-            required:
-            - firstName
-            - lastName
-            - email
-            - affiliation
-            - country
-          minItems: 1
-      required:
-      - projectName
-      - contacts
+      allOf:
+      # fundamental fields
+      - if:
+          properties:
+            visibility:
+              not: { const: "private" }
+          required: [ "visibility" ]
+        then:
+          properties:
+            studyCharacteristics:
+              properties:
+                countries: { minItems: 1 }
+                studySpecies: { minItems: 1 }
+                diseases: { minItems: 1 }
+                associatedFactors: { minItems: 1 }
+                sampleTypes: { minItems: 1 }
+              required:
+              - studyDesign
+              - studyType
+              - countries
+              - years
+              - studySpecies
+              - diseases
+              - associatedFactors
+              - participantAges
+              - sampleTypes
+          required:
+          - studyCharacteristics
       # ensure we have a program name when project name is "other"
-      if:
-        properties:
-          projectName:
-            const: "other"
-      then:
-        required: [ programName ]
+      - if:
+          properties:
+            projectName:
+              const: "other"
+          required: [ "projectName" ]
+        then:
+          required: [ programName ]
 
   - targetName: MicrosporidiaDB
     controlDb:

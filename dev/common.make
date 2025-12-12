@@ -168,16 +168,14 @@ compose: __test_env_file
 		SERVICES="$(SERVICES)"
 	fi
 
+	COMPOSE_FILES="$(COMPOSE_FILES)"
+
 	if [ -f docker-compose.db.yml ]; then
-		COMPOSE_FILES="$(COMPOSE_FILES) -f docker-compose.db.yml"
-	else
-		COMPOSE_FILES="$(COMPOSE_FILES)"
+		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.db.yml"
 	fi
 
 	if [ -f docker-compose.ssh.yml ]; then
-		COMPOSE_FILES="$(COMPOSE_FILES) -f docker-compose.ssh.yml"
-	else
-		COMPOSE_FILES="$(COMPOSE_FILES)"
+		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.ssh.yml"
 	fi
 
 	script -qefc "docker compose --env-file \"$(ENV_FILE)\" $$COMPOSE_FILES $(COMMAND) $(OPTIONS) $$SERVICES" /dev/null 2>&1 | grep -v 'variable is not set'
