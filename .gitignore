@@ -36,7 +36,7 @@ Thumbs.db:encryptable
 
 dev/fully-local/*
 !dev/fully-local/makefile
-!dev/fully-local/phony-app-db.dockerfile
+!dev/fully-local/phony-app-db/Dockerfile
 !dev/fully-local/docker-compose.db.yml
 
 dev/local-with-remote-appdb/*

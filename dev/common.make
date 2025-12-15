@@ -108,6 +108,11 @@ build:
 		*) exit 0;;
 	esac
 
+.PHONY: build-db
+build-db: COMMAND := build
+build-db: SERVICES := phony-app-db
+build-db: compose
+
 # Runs docker compose up, expecting a file named `.env` in the project root
 # directory by default.
 .PHONY: up
@@ -120,6 +125,7 @@ up: __run_prereqs compose
 # Does not prune volumes or networks by default.
 .PHONY: down
 down: COMMAND := down
+down: OPTIONS := -v --remove-orphans
 down: compose
 
 # Runs docker compose start.
@@ -136,7 +142,6 @@ stop: compose
 # Runs docker compose restart.
 .PHONY: restart
 restart: COMMAND := restart
-restart: OPTIONS += --detach
 restart: __run_prereqs compose
 
 # Runs "docker compose logs" printing logs for the full stack.

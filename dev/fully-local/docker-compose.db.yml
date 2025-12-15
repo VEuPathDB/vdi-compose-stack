@@ -6,17 +6,18 @@ services:
   phony-app-db:
     image: phony-app-db
     build:
-      dockerfile: phony-app-db.dockerfile
+      context: phony-app-db
+      dockerfile: Dockerfile
     ports:
     - "1521:5432"
     networks:
     - internal
     environment:
       POSTGRES_DB: vdi
-      POSTGRES_USER: testUsername
-      POSTGRES_PASSWORD: testPassword
+      POSTGRES_USER: pgRoot
+      POSTGRES_PASSWORD: pgPass
     healthcheck:
-      test: "pg_isready -U testUsername -d vdi"
+      test: "pg_isready -U pgRoot -d vdi"
       start_period: 30s
       start_interval: 3s
       interval: 30s
