@@ -13,7 +13,6 @@ else
 endif
 
 MAKEFLAGS += --no-print-directory
-.ONESHELL:
 
 define PROJECT_REPOS_SANS_BIOM
 vdi-service
@@ -69,29 +68,28 @@ default:
 
 .PHONY: prep-stack
 prep-stack:
-	@echo "preparing stack startup requirements"
-	if [ $(KIND) = remote ]; then
-		SRC_CONFIG=partial-local-dev-config.yml
-		SRC_ENV=example.partial-local.env
-		if [ ! -f "docker-compose.ssh.yml" ]; then
-			echo -e "!! \033[91mREMEMBER TO CREATE SSH TUNNEL COMPOSE FILE\033[39m"
-		fi
-	else
-		SRC_CONFIG=full-local-dev-config.yml
-		SRC_ENV=example.full-local.env
-	fi
-
-	if [ ! -f stack-config.yml ]; then
-		cp ../../config/$$SRC_CONFIG stack-config.yml
-	fi
-	if [ ! -f .env ]; then
-		cp ../../env/$$SRC_ENV .env
-	fi
-	if [ ! -f docker-compose.yml ]; then
-		cp ../../docker-compose.yml ./
-	fi
-	if [ ! -f docker-compose.dev.yml ]; then
-		cp ../docker-compose.dev.yml ./
+	@echo "preparing stack startup requirements"; \
+	if [ $(KIND) = remote ]; then \
+		SRC_CONFIG=partial-local-dev-config.yml; \
+		SRC_ENV=example.partial-local.env; \
+		if [ ! -f "docker-compose.ssh.yml" ]; then \
+			echo -e "!! \033[91mREMEMBER TO CREATE SSH TUNNEL COMPOSE FILE\033[39m"; \
+		fi; \
+	else \
+		SRC_CONFIG=full-local-dev-config.yml; \
+		SRC_ENV=example.full-local.env; \
+	fi; \
+	if [ ! -f stack-config.yml ]; then \
+		cp ../../config/$$SRC_CONFIG stack-config.yml; \
+	fi; \
+	if [ ! -f .env ]; then \
+		cp ../../env/$$SRC_ENV .env; \
+	fi; \
+	if [ ! -f docker-compose.yml ]; then \
+		cp ../../docker-compose.yml ./; \
+	fi; \
+	if [ ! -f docker-compose.dev.yml ]; then \
+		cp ../docker-compose.dev.yml ./; \
 	fi
 
 # Pulls down and performs a full build of all the images referenced in the
@@ -101,11 +99,11 @@ prep-stack:
 # OPTIONS make var to change that behavior if desired.
 .PHONY: build
 build:
-	@echo -e "$(BUILD_WARNING)"
-	read -p "Continue (y/N) " yn
-	case "$$yn" in
-		[Yy]*) echo ""; $(MAKE) __the_big_build ;;
-		*) exit 0;;
+	@echo -e "$(BUILD_WARNING)"; \
+	read -p "Continue (y/N) " yn; \
+	case "$$yn" in \
+		[Yy]*) echo ""; $(MAKE) __the_big_build ;; \
+		*) exit 0;; \
 	esac
 
 .PHONY: build-db
@@ -166,22 +164,18 @@ pull: compose
 .PHONY: cmd
 cmd: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 cmd:
-	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then
-		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"
-	else
-		SERVICES="$(SERVICES)"
-	fi
-
-	COMPOSE_FILES="$(COMPOSE_FILES)"
-
-	if [ -f docker-compose.db.yml ]; then
-		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.db.yml"
-	fi
-
-	if [ -f docker-compose.ssh.yml ]; then
-		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.ssh.yml"
-	fi
-
+	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then \
+		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"; \
+	else \
+		SERVICES="$(SERVICES)"; \
+	fi; \
+	COMPOSE_FILES="$(COMPOSE_FILES)"; \
+	if [ -f docker-compose.db.yml ]; then \
+		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.db.yml"; \
+	fi; \
+	if [ -f docker-compose.ssh.yml ]; then \
+		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.ssh.yml"; \
+	fi; \
 	echo "docker compose --env-file $(ENV_FILE) $$COMPOSE_FILES $(COMMAND) $(OPTIONS) $$SERVICES"
 
 
@@ -280,28 +274,27 @@ log-app-db: logs
 
 .PHONY: __the_big_build_prereqs
 __the_big_build_prereqs:
-	@if [ ! -r /run/docker.sock ] || [ ! -w /run/docker.sock ]; then
-		echo
-		echo -e "\033[91mYou do not have the permissions necessary to run docker commands without sudo\033[39m"
-		echo
-		exit 1
-	fi
-
-	if [ -z "${GITHUB_USERNAME}" ] || [ -z "${GITHUB_TOKEN}" ]; then
-		echo
-		echo -e "\033[91mYou do not have both \$$GITHUB_USERNAME and \$$GITHUB_TOKEN in your shell environment\033[39m"
-		echo
-		exit 1
+	@if [ ! -r /run/docker.sock ] || [ ! -w /run/docker.sock ]; then \
+		echo; \
+		echo -e "\033[91mYou do not have the permissions necessary to run docker commands without sudo\033[39m"; \
+		echo; \
+		exit 1; \
+	fi; \
+	if [ -z "${GITHUB_USERNAME}" ] || [ -z "${GITHUB_TOKEN}" ]; then \
+		echo; \
+		echo -e "\033[91mYou do not have both \$$GITHUB_USERNAME and \$$GITHUB_TOKEN in your shell environment\033[39m"; \
+		echo; \
+		exit 1; \
 	fi
 
 .PHONY: __the_big_build_step_1
 __the_big_build_step_1: __the_big_build_prereqs
-	@rm -rf .vdi-repos
-	mkdir .vdi-repos
-	cd .vdi-repos
+	@rm -rf .vdi-repos; \
+	mkdir .vdi-repos; \
+	cd .vdi-repos; \
 	while read -r project; do
-		echo Cloning $$project
-		git clone -q --depth=1 https://github.com/VEuPathDB/$$project.git
+		echo Cloning $$project; \
+		git clone -q --depth=1 https://github.com/VEuPathDB/$$project.git; \
 	done <<< "$(PROJECT_REPOS)"
 
 .PHONY: __the_big_build_step_2
@@ -328,19 +321,19 @@ __the_big_build: __the_big_build_step_3
 
 .PHONY: __test_env_file
 __test_env_file:
-	@if [ ! -f "$(ENV_FILE)" ]; then
-		echo
-		echo -e "\033[91mEnv file '$(ENV_FILE) could not be found\033[39m"
-		echo
-		exit 1
+	@if [ ! -f "$(ENV_FILE)" ]; then \
+		echo; \
+		echo -e "\033[91mEnv file '$(ENV_FILE) could not be found\033[39m"; \
+		echo; \
+		exit 1; \
 	fi
 
 .PHONY: __run_prereqs
 __run_prereqs:
-	@if [ -z "$(SITE_BUILD)" ]; then
-		echo
-		echo -e "\033[91mNo site build number specified!\033[39m"
-		echo
-		exit 1
-	fi
+	@if [ -z "$(SITE_BUILD)" ]; then \
+		echo; \
+		echo -e "\033[91mNo site build number specified!\033[39m"; \
+		echo; \
+		exit 1; \
+	fi; \
 	mkdir -p ${PWD}/tmp/$(SITE_BUILD)
