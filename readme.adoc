@@ -59,6 +59,9 @@ Performs a full service stack build from source.  This will used cached build
 layers from the host machine if they are available.  Use `OPTIONS` to change
 that behavior if desired.
 
+build-db::
+Builds only the local Postgres App DB image.
+
 up::
 Runs {compose-ref}/up[`docker compose up`], expecting a `.env` file in the
 project root directory by default.
@@ -82,6 +85,22 @@ log-service::
 Runs {compose-ref}/logs[`docker compose logs service`], printing out only the
 logs from the HTTP REST server.
 
+log-\{plugin-name}::
++
+--
+Prints logs from only the specific target plugin container.
+
+.Example
+[source,shell]
+----
+# Show only the biom container logs
+make log-biom
+----
+--
+
+cmd::
+Prints docker compose commands.  May be combined with input parameters to
+generate custom commands to run outside of make.
 
 === Compose Parameters
 
