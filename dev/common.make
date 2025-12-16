@@ -163,10 +163,9 @@ log: logs
 pull: COMMAND := pull
 pull: compose
 
-# Runs an arbitrary compose command provided by the COMMAND make var.
-.PHONY: compose
-compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
-compose: __test_env_file
+.PHONY: cmd
+cmd: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
+cmd:
 	@if [ -z "$(SERVICES)" ] && [ "$(COMMAND)" = "logs" ]; then
 		SERVICES="$(strip $(subst internal,cache,$(subst vdi-,,$(PROJECT_REPOS))))"
 	else
@@ -183,7 +182,14 @@ compose: __test_env_file
 		COMPOSE_FILES="$$COMPOSE_FILES -f docker-compose.ssh.yml"
 	fi
 
-	script -qefc "docker compose --env-file \"$(ENV_FILE)\" $$COMPOSE_FILES $(COMMAND) $(OPTIONS) $$SERVICES" /dev/null 2>&1 | grep -v 'variable is not set'
+	echo "docker compose --env-file $(ENV_FILE) $$COMPOSE_FILES $(COMMAND) $(OPTIONS) $$SERVICES"
+
+
+# Runs an arbitrary compose command provided by the COMMAND make var.
+.PHONY: compose
+compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
+compose: __test_env_file
+	@script -qefc '$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)")' /dev/null 2>&1 | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
