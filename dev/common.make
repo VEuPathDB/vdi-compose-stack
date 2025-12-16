@@ -183,7 +183,7 @@ cmd:
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
-	@script -qefc '$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)")' /dev/null 2>&1 | grep -v 'variable is not set'
+	@$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)") 2>&1 | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
