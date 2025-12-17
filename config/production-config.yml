@@ -4,6 +4,7 @@ definitions:
   genomicsProjects: &genomicsProjects
   - AmoebaDB
   - CryptoDB
+  - DataExplorer
   - FungiDB
   - GiardiaDB
   - HostDB
@@ -14,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - VEuPathDB
+  - UniDB
   vdiSchemaPass: &vdiSchemaPass ${env:VDI_APPDB_SCHEMA_PASS}
   vdiControlSchema: &vdiControlSchema vdi_control_prod_${env:LOCATION_INDICATOR}
   vdiDataSchema: &vdiDataSchema vdi_datasets_prod_${env:LOCATION_INDICATOR}

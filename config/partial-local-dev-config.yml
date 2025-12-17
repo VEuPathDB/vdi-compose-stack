@@ -4,6 +4,7 @@ definitions:
   genomicsProjects: &genomicsProjects
   - AmoebaDB
   - CryptoDB
+  - DataExplorer
   - FungiDB
   - GiardiaDB
   - HostDB
@@ -14,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - VEuPathDB
+  - UniDB
   ctrlDbConfig: &ctrlDbConfig
     username: &appDbUser ${env:APP_DB_USERNAME}
     password: &appDbPass ${env:APP_DB_PASSWORD}
