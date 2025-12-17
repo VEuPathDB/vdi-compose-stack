@@ -12,6 +12,8 @@ else
 	SITE_BUILD := $(shell grep -h SITE_BUILD $(ENV_FILE) .env ../../env/example.full-local.env 2>/dev/null | head -n1 | cut -d'=' -f2)
 endif
 
+USE_SCRIPT := $(shell [ "$${OSTYPE}" = "linux-gnu" ] && echo 1 || echo 0)
+
 MAKEFLAGS += --no-print-directory
 
 define PROJECT_REPOS_SANS_BIOM
@@ -183,7 +185,11 @@ cmd:
 .PHONY: compose
 compose: COMPOSE_FILES := $(addprefix -f ,docker-compose.yml docker-compose.dev.yml $(COMPOSE_FILES))
 compose: __test_env_file
-	@$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)") 2>&1 | grep -v 'variable is not set'
+	@if [ $(USE_SCRIPT) -eq 1 ]; then \
+		script -qefc '$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)")' /dev/null 2>&1; \
+	else \
+		$(shell make cmd COMPOSE_FILES="$(COMPOSE_FILES)" COMMAND="$(COMMAND)" OPTIONS="$(OPTIONS)" SERVICES="$(SERVICES)") 2>&1; \
+	fi | grep -v 'variable is not set'
 
 # Runs "docker compose logs plugin-bigwig" printing logs for only the bigwig
 # plugin service.
