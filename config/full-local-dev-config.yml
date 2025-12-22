@@ -299,7 +299,7 @@ vdi:
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: VEuPathDB
+  - targetName: UniDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
