@@ -77,7 +77,7 @@ vdi:
         maxFileSize: 524288000
         allowedFileExtensions: [ ".bw" ]
         usesDataProperties: true
-      projectIds: *genomicsProjects
+        projectIds: *genomicsProjects
     biom:
       server: biom:80
       dataTypes:
@@ -87,15 +87,15 @@ vdi:
         # 100MiB
         maxFileSize: 104857600
         allowedFileExtensions: [ ".biom" ]
-      projectIds:
-      - MicrobiomeDB
+        projectIds:
+        - MicrobiomeDB
     genelist:
       server: genelist:80
       dataTypes:
       - name: genelist
         category: Gene List
         version: 1.0
-      projectIds: *genomicsProjects
+        projectIds: *genomicsProjects
     noop:
       server: noop:80
       dataTypes:
@@ -111,7 +111,7 @@ vdi:
         version: 1.0
         # 10GiB
         maxFileSize: 10737418240
-      projectIds: *genomicsProjects
+        projectIds: *genomicsProjects
     wrangler:
       server: wrangler:80
       dataTypes:
@@ -121,11 +121,12 @@ vdi:
         # 10GiB
         maxFileSize: 10737418240
         allowedFileExtensions: [ ".txt", ".tsv" ]
+        projectIds: *genomicsProjects
       - name: isasimple
         category: ISA Study
         version: 1.0
-      projectIds:
-      - ClinEpiDB
+        projectIds:
+        - ClinEpiDB
 
   installTargets:
   - targetName: AmoebaDB
