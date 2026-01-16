@@ -151,7 +151,7 @@ vdi:
   - targetName: AmoebaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: ClinEpiDB
     controlDb: *ctrlDbConfig
@@ -201,22 +201,22 @@ vdi:
   - targetName: CryptoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: FungiDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: GiardiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: HostDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: MicrobiomeDB
     controlDb: *ctrlDbConfig
@@ -263,17 +263,17 @@ vdi:
   - targetName: MicrosporidiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: OrthoMCL
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: PiroplasmaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: PlasmoDB
     controlDb: *ctrlDbConfig
@@ -283,22 +283,22 @@ vdi:
   - targetName: ToxoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: TrichDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: TriTrypDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: VectorBase
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
-    enabled: false
+    enabled: true
 
   - targetName: UniDB
     controlDb: *ctrlDbConfig
@@ -307,4 +307,4 @@ vdi:
 
   daemons:
     reconciler:
-      enabled: false
+      enabled: true
