@@ -15,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - UniDB
+  - VEuPathDB
   ctrlDbConfig: &ctrlDbConfig
     username: &appDbUser ${env:APP_DB_USERNAME}
     password: &appDbPass ${env:APP_DB_PASSWORD}
@@ -300,7 +300,7 @@ vdi:
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: UniDB
+  - targetName: VEuPathDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false

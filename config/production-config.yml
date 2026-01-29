@@ -15,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - UniDB
+  - VEuPathDB
   vdiSchemaPass: &vdiSchemaPass ${env:VDI_APPDB_SCHEMA_PASS}
   vdiControlSchema: &vdiControlSchema vdi_control_prod_${env:LOCATION_INDICATOR}
   vdiDataSchema: &vdiDataSchema vdi_datasets_prod_${env:LOCATION_INDICATOR}

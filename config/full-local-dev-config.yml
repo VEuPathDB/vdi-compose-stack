@@ -15,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - UniDB
+  - VEuPathDB
   ctrlDbConfig: &ctrlDbConfig
     username: testUsername
     password: testPassword
@@ -300,7 +300,7 @@ vdi:
     dataDb: *dataDbConfig
     enabled: true
 
-  - targetName: UniDB
+  - targetName: VEuPathDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
