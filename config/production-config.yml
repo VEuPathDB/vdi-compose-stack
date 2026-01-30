@@ -15,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - VEuPathDB
+  - UniDB
   vdiSchemaPass: &vdiSchemaPass ${env:VDI_APPDB_SCHEMA_PASS}
   vdiControlSchema: &vdiControlSchema vdi_control_prod_${env:LOCATION_INDICATOR}
   vdiDataSchema: &vdiDataSchema vdi_datasets_prod_${env:LOCATION_INDICATOR}
@@ -129,7 +129,7 @@ vdi:
         - ClinEpiDB
 
   installTargets:
-  - targetName: AmoebaDB
+  - targetId: AmoebaDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -139,7 +139,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:AMOEBA_LDAP}
 
-  - targetName: ClinEpiDB
+  - targetId: ClinEpiDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -189,7 +189,7 @@ vdi:
         then:
           required: [ programName ]
 
-  - targetName: CryptoDB
+  - targetId: CryptoDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -199,7 +199,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:CRYPTO_LDAP}
 
-  - targetName: FungiDB
+  - targetId: FungiDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -209,7 +209,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:FUNGI_LDAP}
 
-  - targetName: GiardiaDB
+  - targetId: GiardiaDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -219,7 +219,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:GIARDIA_LDAP}
 
-  - targetName: HostDB
+  - targetId: HostDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -229,7 +229,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:HOST_LDAP}
 
-  - targetName: MicrobiomeDB
+  - targetId: MicrobiomeDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -276,7 +276,7 @@ vdi:
         then:
           required: [ programName ]
 
-  - targetName: MicrosporidiaDB
+  - targetId: MicrosporidiaDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -286,7 +286,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:MICROSPORIDIA_LDAP}
 
-  - targetName: OrthoMCL
+  - targetId: OrthoMCL
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -296,7 +296,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:ORTHO_LDAP}
 
-  - targetName: PiroplasmaDB
+  - targetId: PiroplasmaDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -306,7 +306,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:PIROPLASMA_LDAP}
 
-  - targetName: PlasmoDB
+  - targetId: PlasmoDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -316,7 +316,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:PLASMO_LDAP}
 
-  - targetName: ToxoDB
+  - targetId: ToxoDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -326,7 +326,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:TOXO_LDAP}
 
-  - targetName: TrichDB
+  - targetId: TrichDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -336,7 +336,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:TRICH_LDAP}
 
-  - targetName: TriTrypDB
+  - targetId: TriTrypDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -346,7 +346,7 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:TRITRYP_LDAP}
 
-  - targetName: VectorBase
+  - targetId: VectorBase
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass
@@ -356,7 +356,8 @@ vdi:
       password: *vdiSchemaPass
       lookupCn: ${env:VECTOR_LDAP}
 
-  - targetName: VEuPathDB
+  - targetId: UniDB
+    targetName: VEuPathDB
     controlDb:
       username: *vdiControlSchema
       password: *vdiSchemaPass

@@ -15,7 +15,7 @@ definitions:
   - TrichDB
   - TriTrypDB
   - VectorBase
-  - VEuPathDB
+  - UniDB
   ctrlDbConfig: &ctrlDbConfig
     username: &appDbUser ${env:APP_DB_USERNAME}
     password: &appDbPass ${env:APP_DB_PASSWORD}
@@ -148,12 +148,12 @@ vdi:
         - ClinEpiDB
 
   installTargets:
-  - targetName: AmoebaDB
+  - targetId: AmoebaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: ClinEpiDB
+  - targetId: ClinEpiDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: true
@@ -198,27 +198,27 @@ vdi:
         then:
           required: [ programName ]
 
-  - targetName: CryptoDB
+  - targetId: CryptoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: FungiDB
+  - targetId: FungiDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: GiardiaDB
+  - targetId: GiardiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: HostDB
+  - targetId: HostDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: MicrobiomeDB
+  - targetId: MicrobiomeDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: true
@@ -260,47 +260,48 @@ vdi:
         then:
           required: [ programName ]
 
-  - targetName: MicrosporidiaDB
+  - targetId: MicrosporidiaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: OrthoMCL
+  - targetId: OrthoMCL
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: PiroplasmaDB
+  - targetId: PiroplasmaDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: PlasmoDB
+  - targetId: PlasmoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: true
 
-  - targetName: ToxoDB
+  - targetId: ToxoDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: TrichDB
+  - targetId: TrichDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: TriTrypDB
+  - targetId: TriTrypDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: VectorBase
+  - targetId: VectorBase
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
 
-  - targetName: VEuPathDB
+  - targetId: UniDB
+    targetName: VEuPathDB
     controlDb: *ctrlDbConfig
     dataDb: *dataDbConfig
     enabled: false
