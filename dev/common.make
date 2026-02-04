@@ -131,7 +131,6 @@ down: compose
 # Runs docker compose start.
 .PHONY: start
 start: COMMAND := start
-start: OPTIONS += --detach
 start: __run_prereqs compose
 
 # Runs docker compose stop.
