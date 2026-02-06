@@ -1,12 +1,12 @@
 FROM postgres:17.6-alpine3.22
 
-ARG SCHEMA_COMMIT=0a489faf64f5c2e440c202fd24ad66b446774a0e
+ARG SCHEMA_COMMIT=45d3952b5f3dd5db9df7d52fc8e9644fa4c80cd2
 
 # Install the VDI schema
 RUN apk add --no-cache git \
  && git clone https://github.com/VEuPathDB/VdiSchema \
  && cd VdiSchema \
- && git checkout 0a489faf64f5c2e440c202fd24ad66b446774a0e \
+ && git checkout ${SCHEMA_COMMIT} \
  && cd Main/lib/sql/Postgres \
  && export SED_PAT='s/:VAR1/TEST/;/^GRANT/d' \
  && sed "$SED_PAT" createVdiControlTables.sql > /docker-entrypoint-initdb.d/02-createVdiControlTables.sql \
