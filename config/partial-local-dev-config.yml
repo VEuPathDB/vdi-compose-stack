@@ -178,14 +178,14 @@ vdi:
               properties:
                 countries: { minItems: 1 }
                 studySpecies: { minItems: 1 }
-                diseases: { minItems: 1 }
+                outcomes: { minItems: 1 }
                 associatedFactors: { minItems: 1 }
                 sampleTypes: { minItems: 1 }
               required:
               - countries
               - years
               - studySpecies
-              - diseases
+              - outcomes
               - associatedFactors
               - participantAges
               - sampleTypes
@@ -236,7 +236,7 @@ vdi:
               properties:
                 countries: { minItems: 1 }
                 studySpecies: { minItems: 1 }
-                diseases: { minItems: 1 }
+                outcomes: { minItems: 1 }
                 associatedFactors: { minItems: 1 }
                 sampleTypes: { minItems: 1 }
               required:
@@ -245,7 +245,7 @@ vdi:
               - countries
               - years
               - studySpecies
-              - diseases
+              - outcomes
               - associatedFactors
               - participantAges
               - sampleTypes
