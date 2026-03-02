@@ -4,7 +4,7 @@ definitions:
   genomicsProjects: &genomicsProjects
   - AmoebaDB
   - CryptoDB
-  - DataExplorer
+  - ClinEpiDB
   - FungiDB
   - GiardiaDB
   - HostDB
