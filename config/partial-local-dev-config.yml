@@ -128,8 +128,6 @@ vdi:
       - name: rnaseq
         category: RNA-Seq
         version: 1.0
-        # 10GiB
-        maxFileSize: 10737418240
         projectIds: *genomicsProjects
     wrangler:
       server: wrangler:80
@@ -137,8 +135,6 @@ vdi:
       - name: phenotype
         category: Phenotype
         version: 1.0
-        # 10GiB
-        maxFileSize: 10737418240
         allowedFileExtensions: [ ".txt", ".tsv" ]
         projectIds: *genomicsProjects
       - name: isasimple
