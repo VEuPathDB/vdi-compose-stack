@@ -16,9 +16,22 @@ definitions:
   - TriTrypDB
   - VectorBase
   - UniDB
+  vdiAppDbLDAP: &vdiAppDbLDAP ${env:APP_DB_LDAP}
+  vdiAppDbUsername: &vdiAppDbUsername ${env:APP_DB_USERNAME}
+  vdiAppDbPassword: &vdiAppDbPassword ${env:APP_DB_PASSWORD}
   vdiSchemaPass: &vdiSchemaPass ${env:VDI_APPDB_SCHEMA_PASS}
   vdiControlSchema: &vdiControlSchema vdi_control_prod_${env:LOCATION_INDICATOR}
   vdiDataSchema: &vdiDataSchema vdi_datasets_prod_${env:LOCATION_INDICATOR}
+  controlDbConfig: &controlDbConfig
+    schema: *vdiControlSchema
+    username: *vdiAppDbUsername
+    password: *vdiAppDbPassword
+    lookupCn: *vdiAppDbLDAP
+  dataDbConfig: &dataDbConfig
+    schema: *vdiDataSchema
+    username: *vdiAppDbUsername
+    password: *vdiAppDbPassword
+    lookupCn: *vdiAppDbLDAP
 
 containerCore:
   authentication:
@@ -26,36 +39,41 @@ containerCore:
       clientId: ${env:OAUTH_CLIENT_ID}
       clientSecret: ${env:OAUTH_CLIENT_SECRET}
       url: https://eupathdb.org/oauth
-      keystoreFile: ${env:KEY_STORE_FILE}
-      keystorePass: ${env:KEY_STORE_PASS_PHRASE}
     adminToken: ${env:ADMIN_AUTH_TOKEN}
 
 vdi:
   siteBuild: ${env:SITE_BUILD}
+
+  sharedTargetDbPooling:
+    poolSize: ${env:APP_DB_POOL_SIZE}
 
   ldap:
     servers: ${env:LDAP_SERVER}
     baseDn: ${env:DB_LOOKUP_BASE_DN}
 
   objectStore:
-    bucketName: vdi-prod
+    bucketName: ${env:S3_BUCKET}
     server:
       host: ${env:S3_HOST}
+      port: ${env:S3_PORT}
     accessToken: ${env:S3_ACCESS_TOKEN}
     secretKey: ${env:S3_SECRET_KEY}
 
   rabbit:
     global:
       connection:
-        server: ${env:GLOBAL_RABBIT_HOST}
+        server:
+          host: ${env:GLOBAL_RABBIT_HOST}
+          port: ${env:GLOBAL_RABBIT_PORT}
+        tls: ${env:GLOBAL_RABBIT_USETLS}
         username: ${env:GLOBAL_RABBIT_USERNAME}
         password: ${env:GLOBAL_RABBIT_PASSWORD}
       exchange:
-        name: vdi-bucket-notifications
+        name:  ${env:GLOBAL_RABBIT_VDI_EXCHANGE_NAME}
       queue:
-        name: vdi-bucket-notifications
+        name: ${env:GLOBAL_RABBIT_VDI_QUEUE_NAME}
       routing:
-        key: vdi-bucket-notifications
+        key:  ${env:GLOBAL_RABBIT_VDI_ROUTING_KEY}
 
   kafka:
     servers:
@@ -64,7 +82,7 @@ vdi:
   cacheDb:
     username: vdi
     password: ${env:CACHE_DB_PASSWORD}
-    server: cache-db
+    server: cache-db:5432
 
   plugins:
     bigwig:
@@ -75,7 +93,7 @@ vdi:
         version: 1.0
         # 500MiB
         maxFileSize: 524288000
-        allowedFileExtensions: [ ".bw" ]
+        allowedFileExtensions: [ ".bw", ".bigwig" ]
         usesDataProperties: true
         projectIds: *genomicsProjects
     biom:
@@ -130,24 +148,12 @@ vdi:
 
   installTargets:
   - targetId: AmoebaDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:AMOEBA_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:AMOEBA_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: ClinEpiDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:CLINEPI_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:CLINEPI_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
     metaValidation:
       allOf:
       - properties:
@@ -190,180 +196,50 @@ vdi:
           required: [ programName ]
 
   - targetId: CryptoDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:CRYPTO_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:CRYPTO_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: FungiDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:FUNGI_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:FUNGI_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: GiardiaDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:GIARDIA_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:GIARDIA_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: HostDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:HOST_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:HOST_LDAP}
-
-  - targetId: MicrobiomeDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:MICROBIOME_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:MICROBIOME_LDAP}
-    metaValidation:
-      allOf:
-      # fundamental fields
-      - if:
-          properties:
-            visibility:
-              not: { const: "private" }
-          required: [ "visibility" ]
-        then:
-          properties:
-            studyCharacteristics:
-              properties:
-                countries: { minItems: 1 }
-                studySpecies: { minItems: 1 }
-                outcomes: { minItems: 1 }
-                associatedFactors: { minItems: 1 }
-                sampleTypes: { minItems: 1 }
-              required:
-              - studyDesign
-              - studyType
-              - countries
-              - years
-              - studySpecies
-              - outcomes
-              - associatedFactors
-              - participantAges
-              - sampleTypes
-          required:
-          - studyCharacteristics
-      # ensure we have a program name when project name is "other"
-      - if:
-          properties:
-            projectName:
-              const: "other"
-          required: [ "projectName" ]
-        then:
-          required: [ programName ]
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: MicrosporidiaDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:MICROSPORIDIA_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:MICROSPORIDIA_LDAP}
-
-  - targetId: OrthoMCL
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:ORTHO_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:ORTHO_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: PiroplasmaDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:PIROPLASMA_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:PIROPLASMA_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: PlasmoDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:PLASMO_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:PLASMO_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: ToxoDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TOXO_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TOXO_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: TrichDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TRICH_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TRICH_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: TriTrypDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TRITRYP_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:TRITRYP_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: VectorBase
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:VECTOR_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:VECTOR_LDAP}
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
 
   - targetId: UniDB
     targetName: VEuPathDB
-    controlDb:
-      username: *vdiControlSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:UNIDB_LDAP}
-    dataDb:
-      username: *vdiDataSchema
-      password: *vdiSchemaPass
-      lookupCn: ${env:UNIDB_LDAP}
-
+    controlDb: *controlDbConfig
+    dataDb: *dataDbConfig
