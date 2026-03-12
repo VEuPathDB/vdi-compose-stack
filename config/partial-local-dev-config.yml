@@ -88,7 +88,7 @@ vdi:
         version: 1.0
         # 500MiB
         maxFileSize: 524288000
-        allowedFileExtensions: [ ".bw" ]
+        allowedFileExtensions: [ ".bw", ".bigwig" ]
         usesDataProperties: true
         projectIds: *genomicsProjects
     biom:
